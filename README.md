@@ -85,6 +85,7 @@ You can find plenty of other (domain-specific) language models on Hugging Face, 
 - [ ] Implement AutoML for ner (training, validation and storage of model)
 - [ ] Wrap instructions for build in a Dockerfile
 - [ ] Add sample projects (twitter sentiment analysis, intent classification and some named entity recognition) and publish them in some posts
+- [ ] Publish the repository and set up new roadmap
 
 If you want to have something added, feel free to open an [issue](https://github.com/code-kern-ai/automl-docker/issues).
 
