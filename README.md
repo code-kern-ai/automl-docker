@@ -4,7 +4,7 @@
 CLI-based framework to automatically build ML models from training data into a servable Docker container.
 
 ## Prerequisites
-This library uses [spaCy](https://github.com/explosion/spaCy) for tokenization; to apply it, please download the [respective language model](https://spacy.io/models) first.
+This library uses [spaCy](https://github.com/explosion/spaCy) for tokenization; to apply it. During the creation procedure, you'll be asked to download specific language models.
 
 ## Installation
 You can set up this library via either running `$ pip install automl-docker`, or via cloning this repository and running `$ pip install -r requirements.txt` in your repository.
