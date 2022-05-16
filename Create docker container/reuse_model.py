@@ -1,5 +1,4 @@
 # Basis libraries
-from unittest import expectedFailure
 import numpy as np 
 import pandas as pd 
 import pickle
@@ -37,9 +36,6 @@ try:
 except:
     embeddings = transformer.encode(corpus)
 
-actual = [1, 0]
 preds = loaded_model.predict(embeddings)
-
-print(actual)
 print(preds)
 

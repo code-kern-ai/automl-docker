@@ -92,9 +92,9 @@ COL_LABEL = input_getter('>> Is this the correct column name? ->')
 
 while True:
     print(' ')
-    print('>> Please input a number to choose your method of embedding.')
-    print('>> 1 - Transformer based embeddings (accurate, but slower)')
-    print('>> 2 - TF-IDF Vectorizer (faster, but less accurate)')
+    print('>> Please input a number to choose your method of preprocessing the text data.')
+    print('>> 1 - Very accurate, state of the art method, but slow (especially on large datasets)')
+    print('>> 2 - Fast but less accurate (but still good)')
     print(' ')
 
     choice = input()
@@ -137,6 +137,7 @@ while True:
     print('>> 2 - Random Forest Classifier')
     print('>> 3 - XGBoost Classifier')
     print('>> 4 - Noise Robust Deep Neural Network (work in progress)')
+    print(' ')
 
     model_choice = input()
 

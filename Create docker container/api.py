@@ -1,22 +1,21 @@
 # Import statements go here
-from pyexpat import features
 import uvicorn 
 from fastapi import FastAPI
-
 from pydantic import BaseModel
 
 # Instantiate fastapi app
 app = FastAPI()
 
-class Data(BaseModel):
-    features: str
-    labels: int
+class request_body(BaseModel):
+    text : str
 
-@app.post('/data')
-def get_data(data: Data):
-    features = data['features']
-    labels = data['labels']
-    return features, labels
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Kern automl tool."}
+
+@app.post("/data-to-predict")
+def predict(data: request_body):
+    return data
 
 if __name__ == '__main__':
     uvicorn.run(app, host='127.0.0.1', port=8000)
