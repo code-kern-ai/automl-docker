@@ -17,14 +17,14 @@ from sklearn.metrics import roc_auc_score, accuracy_score, confusion_matrix, mea
 import xgboost as xgb
 
 # load the model from a pickle (.pkl) file 
-with open('XGBoost 16-05-2022 13-15.pkl', 'rb') as fid:
+with open('/home/leopuettmann/repos/automl-docker/Test data and pretrained model/XGBoost 16-05-2022 13-15.pkl', 'rb') as fid:
     loaded_model = pickle.load(fid)
 
 # Load the transformer or vectorizer
-transformer = pickle.load(open("transformer.pk", "rb" ) )
+transformer = pickle.load(open('/home/leopuettmann/repos/automl-docker/transformer.pk', 'rb' ) )
 
 # Load the data from json file (late provided by api)
-with open('make_preds.json') as f:
+with open('/home/leopuettmann/repos/automl-docker/Create docker container/make_preds.json') as f:
     data = json.load(f)
 
 
@@ -36,6 +36,9 @@ try:
 except:
     embeddings = transformer.encode(corpus)
 
-preds = loaded_model.predict(embeddings)
-print(preds)
+try:
+    preds = loaded_model.predict(embeddings)
+    print(preds)
+except:
+    model = load_model()
 

@@ -1,9 +1,9 @@
 FROM python:3.8.10
  
-WORKDIR /app
-COPY . /app
+WORKDIR /automl
+COPY . /automl
  
 RUN pip install -r requirements.txt
  
 ENTRYPOINT ["python"]
-CMD ["app.py"]
+CMD ["reuse_model.py"]
