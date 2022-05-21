@@ -1,0 +1,8 @@
+numpy==1.22.3
+pandas==1.4.2
+tensorflow==2.8.0
+sentence-transformers==2.2.0
+scikit-learn==1.0.2
+silence_tensorflow==1.1.0
+fastapi==0.77.1
+uvicorn==0.17.6
