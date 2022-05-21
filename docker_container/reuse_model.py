@@ -60,13 +60,8 @@ def create_predictions(embeddings):
         preds = model.predict(embeddings)
         return preds
 
-    # Otherwise load in the sklearn model
     except:
         model =  pickle.load(open('Logistic Regression.pkl', 'rb' ) )
         preds = model.predict(embeddings)
         return preds
 
-def convert_preds(predictions, corpus):
-    output = {}
-    for i in predictions:
-        output[i] = i
