@@ -23,7 +23,7 @@ from sklearn.metrics import (
 )
 
 # Embedders and Transformers
-from sentence_transformers import SentenceTransformer
+from embedders.classification.contextual import TransformerSentenceEmbedder
 
 # def my_accuracy_scorer(*args):
 #     score = accuracy_score(*args)
@@ -110,37 +110,19 @@ while True:
         ">> Please input a number to choose your method of preprocessing the text data."
     )
     print(
-        ">> 1 - Very accurate, state of the art method, but slow (especially on large datasets)"
+        ">> distilbert-base-uncased - Very accurate, state of the art method, but slow (especially on large datasets)"
     )
-    print(">> 2 - Fast but less accurate (but still good)")
     print(" ")
 
     choice = input()
 
-    if choice == "1":
-        # Instantiate a sentence transformer and create embeddings
-        print(
-            ">> Creating embeddings using transformer model, this might take a couple of minutes ..."
-        )
-        sent_transformer = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-        embeds = sent_transformer.encode(corpus, show_progress_bar=True)
-        embeddings = np.array(embeds)
-
-        # Pickle transformer to be reusable in a different file
-        with open("ml/transformer.pk", "wb") as fin:
-            pickle.dump(sent_transformer, fin)
-        break
-
-    else:
-        # Intantiate a tf-idf vectorizer
-        print(">> Creating TF-IDF embeddings ...")
-        vect = TfidfVectorizer()
-        embeddings = vect.fit_transform(corpus).astype("float32")
-
-        # Pickle vectorizer to be reusable in a different file
-        with open("ml/transformer.pk", "wb") as fin:
-            pickle.dump(vect, fin)
-        break
+    print(
+        f">> Creating embeddings using {choice} model, this might take a couple of minutes ..."
+    )
+    sent_transformer = TransformerSentenceEmbedder(choice)
+    embeds = sent_transformer.transform(corpus)
+    embeddings = np.array(embeds)
+    break
 
 features = embeddings
 

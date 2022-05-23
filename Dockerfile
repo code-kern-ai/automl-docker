@@ -6,4 +6,4 @@ COPY . /automl
 RUN pip install -r requirements.txt
 
 # Run api and models
-CMD ["uvicorn", "api:api","--host", "0.0.0.0", "--port", "7531", "--app-dir", "app/backend"]
+CMD ["uvicorn", "api:api","--host", "0.0.0.0", "--port", "7531", "--app-dir", "app"]
