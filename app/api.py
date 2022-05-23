@@ -1,5 +1,5 @@
 # Import statements go here
-from fastapi import FastAPI
+from fastapi import FastAPI, responses
 from pydantic import BaseModel
 import pickle
 
@@ -17,11 +17,8 @@ transformer = TransformerSentenceEmbedder("distilbert-base-uncased")
 
 
 @api.get("/")
-def read_root():
-    """
-    Simple greeting function.
-    """
-    return {"message": "Welcome to the Kern automl tool."}
+def root():
+    return responses.RedirectResponse(url="/docs")
 
 
 @api.post("/predict")  # response_model=Predictions
