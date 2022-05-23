@@ -16,27 +16,12 @@ from datetime import datetime
 
 # Sklearn libraries
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split, RandomizedSearchCV, ParameterGrid
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import roc_auc_score, accuracy_score, confusion_matrix, mean_squared_error, make_scorer
+from sklearn.metrics import roc_auc_score, accuracy_score, confusion_matrix, mean_squared_error
 
 # Embedders and Transformers
 from sentence_transformers import SentenceTransformer
-
-# XGBoost
-import xgboost as xgb
-
-# tqdm for progress bars
-from tqdm import tqdm
-
-# Tensorflow 
-import tensorflow as tf
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Flatten, LSTM
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping
-
 
 # def my_accuracy_scorer(*args):
 #     score = accuracy_score(*args)
@@ -58,6 +43,13 @@ print('Please visit https://github.com/code-kern-ai/automl-docker for instructio
 print(' ')
 
 def input_getter(path_statement):
+    """
+    Function to grab and validate an input from a user. 
+    Input should be a filepath to some data.
+
+    Args: 
+    path_statement -> Path of the data that should be loaded.
+    """
     while True:
         user_input = input()
         print(path_statement, user_input)
@@ -144,76 +136,29 @@ labels = np.array(labels)
 # Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2)
 
-# Selecting a model
-while True:
+print('>> Training maschine learning model ...')
+print(' ')
+lr = LogisticRegression(dual=False)
+
+# Hyper parameter space is relatively small
+
+hyperparameters = {'C': np.arange(0, 4), 
+                'penalty': ['l2', 'none'],
+                'max_iter': [100, 150, 250, 500]}
+
+# Initiate and fit random search cv
+lr_clf = RandomizedSearchCV(estimator=lr, param_distributions=hyperparameters, cv=10,  n_iter=10, verbose=2)
+lr_clf.fit(X_train, y_train)
+y_pred = lr_clf.predict(X_test)
+
+# Save the model to current directory
+with open(f'./docker_container/Logistic Regression.pkl', 'wb') as fid:
+    pickle.dump(lr_clf, fid) 
     print(' ')
-    print('>> Please input a number to choose your algorithm:')
-    print('>> 1 - Simple algorithm')
-    print('>> 2 - Deep Learning Algorithm (work in progress)')
+    print(f'>> Saved model to {os.path.abspath(os.getcwd())}') 
     print(' ')
 
-    model_choice = input()
-
-    if model_choice == '1':
-        print('>> Training a logistic regression ...')
-        lr = LogisticRegression(dual=False)
-
-        # Hyper parameter space is relatively small
-
-        hyperparameters = {'C': np.arange(0, 4), 
-                        'penalty': ['l2', 'none'],
-                        'max_iter': [100, 150, 250, 500]}
-
-        # Initiate and fit random search cv
-        lr_clf = RandomizedSearchCV(estimator=lr, param_distributions=hyperparameters, cv=10,  n_iter=10, verbose=2)
-        lr_clf.fit(X_train, y_train)
-        y_pred = lr_clf.predict(X_test)
-
-        # Save the model to current directory
-        with open(f'./docker_container/Logistic Regression.pkl', 'wb') as fid:
-            pickle.dump(lr_clf, fid) 
-            print(' ')
-            print(f'>> Saved model to {os.path.abspath(os.getcwd())}') 
-            print(' ')
-        break
-
-    elif model_choice == '2':
-        print('Training neural network ...')
-
-        # Vectorize labels
-        y_train = np.asarray(y_train).astype('float32').reshape((-1,1))
-        y_test = np.asarray(y_test).astype('float32').reshape((-1,1))
-
-        # Implement early stopping to prevent overfitting
-        callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=2)
-
-        # Setup the neural network
-        neural_net = Sequential()
-        neural_net.add(Dense(64, activation='relu', input_shape=(X_train.shape[1], )))
-        neural_net.add(Dropout(0.2))
-        neural_net.add(Dense(64, activation='relu'))
-        neural_net.add(Dropout(0.2))
-        neural_net.add(Dense(32, activation='relu'))
-        neural_net.add(Dense(1, activation='sigmoid'))
-
-        neural_net.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-        # Finally, train the model
-        neural_net.fit(X_train, y_train, epochs=4, verbose=True, callbacks=[callback])
-
-        # Saveing, to be able to reuse the model later
-        neural_net.save(f'Neural Net')
-        print(' ')
-        print(f'>> Saved model to {os.path.abspath(os.getcwd())}')
-        print(' ')
-
-        # Make predictions on the testing data
-        y_pred = (neural_net.predict(X_test) > 0.5).astype("int32")
-        break
-
-    else:
-        pass
-
+# Generate evaluation metrics
 print(' ')
 print('>> Generating evaluation metrics on unseen testing data...')
 print(' ')
