@@ -4,26 +4,19 @@ import requests
 # Print kern image and a header
 st.title("Prediction UI")
 
-inpt = st.text_input("Input your text below!")
+input_ = st.text_input(
+    "Try out your new machine learning model in this user interface. Just type some text below."
+)
 
 if st.button("Predict!"):
-    if inpt is not None:
+    if input_ is not None:
         # Get request output from the fastapi
-        res = requests.post("http://localhost:7531/predict", json={"text": [inpt]})
+        response = requests.post(
+            "http://localhost:7531/predict", json={"text": [input_]}
+        )
+        if response.status_code == 200:
+            st.markdown(response.json(), unsafe_allow_html=True)
 
-        # Process the request content
-        res_list = [c for c in res.text]
-        res_list.remove("[")
-        res_list.remove("]")
-        res_conv = ["Clickbait." if x == "1" else "Not clickbait" for x in res_list]
-
-        if res_conv[0] == "Clickbait.":
-            text = '<p style="font-family:monospace; color:#EC7063; font-size: 18px;">Clickbait.</p>'
-        else:
-            text = '<p style="font-family:monospace; color:#5DADE2; font-size: 18px";">Not Clickbait.</p>'
-
-        # Print out the results
-        st.markdown(text, unsafe_allow_html=True)
-
-    else:
-        st.write("Please provide texts first!")
+st.markdown(
+    "If you want to improve your model, try adding more high-quality labeled training data. Check out [Kern AI](https://www.kern.ai)"
+)

@@ -38,5 +38,5 @@ def create_predictions(embeddings):
     """
 
     model = pickle.load(open("ml/Logistic Regression.pkl", "rb"))
-    preds = model.predict(embeddings)
+    preds = model.predict_proba(embeddings)
     return preds
