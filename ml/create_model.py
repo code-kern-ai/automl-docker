@@ -127,7 +127,7 @@ while True:
         embeddings = np.array(embeds)
 
         # Pickle transformer to be reusable in a different file
-        with open("transformer.pk", "wb") as fin:
+        with open("ml/transformer.pk", "wb") as fin:
             pickle.dump(sent_transformer, fin)
         break
 
@@ -138,7 +138,7 @@ while True:
         embeddings = vect.fit_transform(corpus).astype("float32")
 
         # Pickle vectorizer to be reusable in a different file
-        with open("./docker_container/transformer.pk", "wb") as fin:
+        with open("ml/transformer.pk", "wb") as fin:
             pickle.dump(vect, fin)
         break
 
@@ -150,7 +150,7 @@ labels = np.array(labels)
 # Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2)
 
-print(">> Training maschine learning model ...")
+print(">> Training machine learning model ...")
 print(" ")
 lr = LogisticRegression(dual=False)
 
@@ -170,7 +170,7 @@ lr_clf.fit(X_train, y_train)
 y_pred = lr_clf.predict(X_test)
 
 # Save the model to current directory
-with open(f"./docker_container/Logistic Regression.pkl", "wb") as fid:
+with open(f"ml/Logistic Regression.pkl", "wb") as fid:
     pickle.dump(lr_clf, fid)
     print(" ")
     print(f">> Saved model to {os.path.abspath(os.getcwd())}")
