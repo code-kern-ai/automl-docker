@@ -1,0 +1,13 @@
+#!/bin/bash
+echo -ne 'stopping old container...'
+docker stop automl-docker-backend
+echo -ne '\t [done]\n'
+
+echo -ne 'building container...'
+docker build -t automl-container-backend -f Dockerfile .
+echo -ne '\t\t [done]\n'
+
+echo -ne 'starting...'
+docker run -d --rm --name automl-docker-backend -p 7531:7531 automl-container-backend
+echo -ne '\t\t\t [done]\n'
+docker logs automl-docker-backend -f
