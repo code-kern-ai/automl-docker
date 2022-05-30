@@ -60,7 +60,7 @@ To make text data usable to maschines, it need to be preprocessed. To ensure sta
 If you don't know what all that means: don't worry! All you need to do then is to choose between speed and accuracy by choosing one of our suggestions.
 - distilbert-base-uncased -> Very accurate, state of the art method, but slow (especially on large datasets). [ENG]
 - all-MiniLM-L6-v2 -> Faster, but still relatively accurate. [ENG]
-- Custom model -> Input your own model from https://huggingface.co/.
+- Custom model -> Input your own model from [🤗 Hugging Face](https://huggingface.co/).
 
 By choosing "Custom model" you can always just use a different model from Hugging Face! After you have choosen your model, the text data will be processed.
 
@@ -80,12 +80,12 @@ Negative    90.0%       90.0%     90.0%
 ```
 
 ## Creating a container with Docker
-Now, all the components are ready and it's time to bring them all together. Building the container is super easy! Make sure, that Docker Desktop is running on your maschine. You can get it [here](https://www.docker.com/products/docker-desktop/). Next, running the following command:
+Now, all the components are ready and it's time to bring them all together. Building the container is super easy! Make sure that Docker Desktop is running on your maschine. You can get it [here](https://www.docker.com/products/docker-desktop/). Next, run the following command:
 ```
 $ bash container
 ```
 
-Or, if you dont have bash:
+Or, if you dont have bash in your CLI:
 ```
 $ docker build -t automl-container-backend .
 $ docker run -d -p 7531:7531 automl-container-backend
