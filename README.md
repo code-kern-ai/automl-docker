@@ -4,7 +4,8 @@
 With this tool, you can easily use your data to quickly create usable, scalabe maschine learning models. This CLI-based framework offers you the ability to automatically build ML models from training data into a servable Docker container. With this tool you can: 
 - Easily create a maschine learning model.
 - Create a docker container for the model.
-- (Optionally) test your model using a streamlit interface.
+- Connect to there containers with an API.
+- (Optionally) test your model using a UI.
 
 ##  Set-up & Installation
 This repository uses various libraries, such as sklearn or our [embedders library](https://github.com/code-kern-ai/embedders).  
@@ -22,7 +23,7 @@ $ pip install -r requirements.txt
 $ conda install --file requirements.txt
 ```
 
-## Usage
+## Getting started
 Once the requirements are installed, you are ready to go! In the first step of the automl-tool, you are going to be using a CLI to load in your data, after which a maschine learning model will be created for you. To get going, start with the following command:
 
 ```
@@ -53,9 +54,9 @@ training_data  |  labels
 ## Preprocessing the text data.
 To make text data usable to maschines, it need to be preprocessed. To ensure state of the art maschine learning, we make use of large, pre-trained transformers pulled from [🤗 Hugging Face](https://huggingface.co/) to preprocess text data..
 If you don't know what all that means: don't worry! All you need to do then is to choose between speed and accuracy by choosing one of our suggestions.
-- distilbert-base-uncased -> Very accurate, state of the art method, but slow (especially on large datasets). [ENG]")
-- all-MiniLM-L6-v2 -> Faster, but still relatively accurate. [ENG]")
-- Custom model -> Input your own model from https://huggingface.co/.")
+- distilbert-base-uncased -> Very accurate, state of the art method, but slow (especially on large datasets). [ENG]
+- all-MiniLM-L6-v2 -> Faster, but still relatively accurate. [ENG]
+- Custom model -> Input your own model from https://huggingface.co/.
 
 By choosing "Custom model" you can always just use a different model from Hugging Face! After you have choosen your model, the text data will be processed.
 
@@ -72,10 +73,9 @@ Positive    90.0%       90.0%     90.0%
 Neutral     90.0%       90.0%     90.0%
 Negative    90.0%       90.0%     90.0%
 
-The Dockerfile to run this service has been stored to "training_data-distilbert-base-uncased.Dockerfile". You can find a detailed report of the performance under "training_data-distilbert-base-uncased.xlsx".
 ```
-## Creating a container with Docker
 
+## Creating a container with Docker
 Now, all the components are ready and it's time to bring them all together. Building the container is super easy! Make sure, that Docker Desktop is running on your maschine. You can get it [here](https://www.docker.com/products/docker-desktop/). Next, running the following command:
 ```
 $ bash container
@@ -88,7 +88,13 @@ $ docker run -d -p 7531:7531 automl-container-backend
 ```
 Building the container can take a couple of minutes. The perfect opportunity to grab yet another cup of coffee!
 
-## (Optional) testing out the model using a user interface with streamlit
+## Using the container 
+After the container has been build, you are free to use it anywhere you want. To give you an example of what you could do with the container, we will be using it to connect to a graphical user interface that was build using the streamlit framework. If you have come this far, everything you'll need for that is already installed on your maschine! 
+
+The user interface we build was made to get predictions on single sentences of texts. Our maschine learning model was trained on the [clickbait_dataset]() to be able to predict wether or not a headline of an article is clickbait or not. So, depending on your maschine learning model, you need to modify the user interface. But don't worry: streamlit is very easy and fun to use and the [documentation](https://docs.streamlit.io/) is very helpful!
+
+
+
 
 
 ## Roadmap
