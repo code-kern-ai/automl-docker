@@ -1,36 +1,53 @@
 ![!automl-docker](banner.png)
 
 # 🐳 automl-docker
+  ___________      _  __                      
+ |  _______  |    | |/ /                 /\  |
+ | |       | |    |   / ___ _ __ _ __   /‾‾\ |
+| |        | |    |  < / _ \ |__| |_ \        
+| |_______| |     | . \  __/ |  | | | |       
+|___________|     |_|\_\___|_|  |_| |_|       
+
 CLI-based framework to automatically build ML models from training data into a servable Docker container.
 
-## Prerequisites
-This library uses [spaCy](https://github.com/explosion/spaCy) for tokenization; to apply it. During the creation procedure, you'll be asked to download specific language models.
+##  Set-up & Installation
+This repository uses various libraries, such as sklearn or our [embedders library](https://github.com/code-kern-ai/embedders).  
 
-## Installation
-You can set up this library via either running `$ pip install automl-docker`, or via cloning this repository and running `$ pip install -r requirements.txt` in your repository.
+First, you can clone this repository to your local computer. To this by typing:
+```
+$ git clone git@github.com:code-kern-ai/embedders.git
+```
 
-A sample installation would be:
+After that you simply need to install all the nessecary libraries for this repository with either pip or conda. You can do this by using the following commands:
 
 ```
-$ conda create --name automl-docker python=3.9
-$ conda activate automl-docker
-$ pip install automl-docker
+$ pip install -r requirements.txt
+$ conda install --file requirements.txt
 ```
 
 ## Usage
-Once you installed the package, you can apply the application via running `$ automl-docker`, which will launch a dialogue in your CLI guiding you through the automl process:
+Once the requirements are installed, you are ready to go! In the first step of the automl-tool, you are going to be using a CLI to load in your data, after which a maschine learning model will be created for you. To get going, start with the following command:
 
 ```
-Welcome to 🐳 automl-docker! Please enter the type of task you want to do (currently supporting [classification, named-entity-recognition])
-
-> classification
+$ bash model
+```
+If your system does not have bash, you can also start by typing:
+```
+$ python3 ml/create_model.py
+```
+Once the script has started, you will be prompted to set a path to the data location on your system. Currently, only the .csv format is usable in the tool. More data formats will follow soon!
+On windows, the path might look something like this:
+```
+C:\\Users\\yourname\\data\\training_data.csv
+```
+On Mac and Linux, the path might look like this: 
+```
+home/user/data/training_data.csv
 ```
 
-```
-Great, we'll help you set up your classification. Where do you have your training data stored?
+Next, you need to input the name of the columns where the training data and the labels are stored.
 
-> path/to/files/training_data.json
-```
+
 
 ```
 Please enter the language of your data in ISO2 code
@@ -47,7 +64,9 @@ For english data, you need to have the en_core_web_sm data loaded; if you haven'
 ```
 We're now loading the models to embed your data. Please enter the configuration string (suggestion: "distilbert-base-uncased")
 
-> distilbert-base-uncased
+> 1 - distilbert-base-uncased -> Very accurate, state of the art method, but slow (especially on large datasets). [ENG]")
+> 2 - all-MiniLM-L6-v2 -> Faster, but still relatively accurate. [ENG]")
+> 3 - Custom model -> Input your own model from https://huggingface.co/.")
 ```
 
 ```
@@ -79,13 +98,13 @@ We're making use of large, pre-trained transformers pulled from [🤗 Hugging Fa
 You can find plenty of other (domain-specific) language models on Hugging Face, so give it a try.
 
 ## Roadmap
-- [ ] Build basic CLI to capture the data
+- [x] Build basic CLI to capture the data
 - [ ] Build mappings for language data (e.g. `EN` -> ask for `en_core_web_sm` AND recommend using `distilbert-base-uncased`)
-- [ ] Implement AutoML for classification (training, validation and storage of model)
+- [x] Implement AutoML for classification (training, validation and storage of model)
 - [ ] Implement AutoML for ner (training, validation and storage of model)
 - [ ] Wrap instructions for build in a Dockerfile
 - [ ] Add sample projects (twitter sentiment analysis, intent classification and some named entity recognition) and publish them in some posts
-- [ ] Publish the repository and set up new roadmap
+- [x] Publish the repository and set up new roadmap
 
 If you want to have something added, feel free to open an [issue](https://github.com/code-kern-ai/automl-docker/issues).
 
@@ -107,4 +126,4 @@ And please don't forget to leave a ⭐ if you like the work!
 Distributed under the Apache 2.0 License. See LICENSE.txt for more information.
 
 ## Contact
-This library is developed and maintained by [kern.ai](https://github.com/code-kern-ai). If you want to provide us with feedback or have some questions, don't hesitate to contact us. We're super happy to help ✌️
+This library is developed and maintained by [kern.ai](https://github.com/code-kern-ai). If you want to provide us with feedback or have some questions, don't hesitate to contact us. We're super happy to help. ✌️
