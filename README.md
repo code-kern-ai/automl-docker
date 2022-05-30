@@ -8,7 +8,7 @@ With this tool, you can easily use your data to quickly create usable, scalabe m
 - (Optionally) test your model using a UI.
 
 ##  Set-up & Installation
-This repository uses various libraries, such as sklearn or our [embedders library](https://github.com/code-kern-ai/embedders).  
+This repository uses various libraries, such as sklearn or our [embedders library](https://github.com/code-kern-ai/embedders). This guide also used the [clickbait_dataset](https://www.kaggle.com/datasets/amananandrai/clickbait-dataset) to illustrate how you could use the automl-tool. The dataset is small, easy to use and already included in this repository. To use the automl-tool, you could of course use any other dataset that contains textual, labeled data. Our tool currently supports only the .csv format. 
 
 First, you can clone this repository to your local computer. To this by typing:
 ```
@@ -31,25 +31,25 @@ Once the requirements are installed, you are ready to go! In the first step of t
 $ bash model
 ```
 
-If your system does not have bash, you can also start by typing:
+If your CLI does not have bash, you can also start by typing:
 ```
 $ python3 ml/create_model.py
 ```
 
-Once the script has started, you will be prompted to set a path to the data location on your system. Currently, only the .csv format is usable in the tool. More data formats will follow soon!
-On windows, the path might look something like this:
-```
-C:\\Users\\yourname\\data\\training_data.csv
-```
-
+Once the script is started, you will be prompted to set a path to the data location on your system. Currently, only the .csv data format is usable in the tool. More data formats will follow soon!
 On Mac and Linux, the path might look like this: 
 ```
 home/user/data/training_data.csv
 ```
 
-Next, you need to input the name of the columns where the training data and the labels are stored.
+On windows, the path might look something like this:
 ```
-training_data  |  labels
+C:\\Users\\yourname\\data\\training_data.csv
+```
+
+Next, you need to input the name of the columns where the training data and the labels are stored. In our example, you would use "headline" as the column for the training data and "clickbait" as the column for the training labels.
+```
+   headline    | clickbait
    example1    |     0
    example2    |     1
    example3    |     0
@@ -97,7 +97,7 @@ Building the container can take a couple of minutes. The perfect opportunity to 
 ## Using the container 
 After the container has been build, you are free to use it anywhere you want. To give you an example of what you could do with the container, we will be using it to connect to a graphical user interface that was build using the streamlit framework. If you have come this far, everything you'll need for that is already installed on your maschine! 
 
-The user interface we build was made to get predictions on single sentences of texts. Our maschine learning model was trained on the [clickbait_dataset]() to be able to predict wether or not a headline of an article is clickbait or not. So, depending on your maschine learning model, you need to modify the user interface. But don't worry: streamlit is very easy and fun to use and the [documentation](https://docs.streamlit.io/) is very helpful!
+The user interface we build was made to get predictions on single sentences of texts. Our maschine learning model was trained on the [clickbait_dataset](https://www.kaggle.com/datasets/amananandrai/clickbait-dataset) to be able to predict wether or not a headline of an article is clickbait or not. It's very small  So, depending on your maschine learning model, you need to modify the user interface. But don't worry: streamlit is very easy and fun to use and the [documentation](https://docs.streamlit.io/) is very helpful!
 
 To start the streamlit application, simply use the following command:
 ```
