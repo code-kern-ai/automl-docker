@@ -17,5 +17,5 @@ if st.button("Predict!"):
             st.markdown(response.json(), unsafe_allow_html=True)
 
 st.markdown(
-    "If you want to improve your model, try adding more high-quality labeled training data. Check out [Kern AI](https://www.kern.ai)"
+    "Check out [Kern AI](https://www.kern.ai) to improve your model by adding more high-quality labeled training data. "
 )
