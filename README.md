@@ -14,6 +14,7 @@ First, you can clone this repository to your local computer. To this by typing:
 ```
 $ git clone git@github.com:code-kern-ai/automl-docker.git
 ```
+
 If you are new to GitHub, you'll find a nice guide to cloning a repository [here](https://github.com/git-guides/git-clone).
 
 After you have cloned the repository, you simply need to install all the nessecary libraries with either pip or conda. This is very easy, as we have already collected all the necessary libraries for you. All you need to do is using one of the following commands (depending on wether you are using Anaconda):
@@ -29,15 +30,18 @@ Once the requirements are installed, you are ready to go! In the first step of t
 ```
 $ bash model
 ```
+
 If your system does not have bash, you can also start by typing:
 ```
 $ python3 ml/create_model.py
 ```
+
 Once the script has started, you will be prompted to set a path to the data location on your system. Currently, only the .csv format is usable in the tool. More data formats will follow soon!
 On windows, the path might look something like this:
 ```
 C:\\Users\\yourname\\data\\training_data.csv
 ```
+
 On Mac and Linux, the path might look like this: 
 ```
 home/user/data/training_data.csv
@@ -80,12 +84,14 @@ Now, all the components are ready and it's time to bring them all together. Buil
 ```
 $ bash container
 ```
+
 Or, if you dont have bash:
 ```
 $ docker build -t automl-container-backend .
 $ docker run -d -p 7531:7531 automl-container-backend
 
 ```
+
 Building the container can take a couple of minutes. The perfect opportunity to grab yet another cup of coffee!
 
 ## Using the container 
@@ -93,9 +99,12 @@ After the container has been build, you are free to use it anywhere you want. To
 
 The user interface we build was made to get predictions on single sentences of texts. Our maschine learning model was trained on the [clickbait_dataset]() to be able to predict wether or not a headline of an article is clickbait or not. So, depending on your maschine learning model, you need to modify the user interface. But don't worry: streamlit is very easy and fun to use and the [documentation](https://docs.streamlit.io/) is very helpful!
 
+To start the streamlit application, simply use the following command:
+```
+$ streamlit run app/ui.py
+```
 
-
-
+And that's it! By default, the UI will automatically connect to the previouisly build container. 
 
 ## Roadmap
 - [ ] Build basic CLI to capture the data
