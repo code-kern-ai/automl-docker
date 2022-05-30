@@ -46,67 +46,59 @@ Next, you need to input the name of the columns where the training data and the 
 ```
 training_data  |  labels
    example1    |     0
-   example1    |     1
-   example1    |     0
+   example2    |     1
+   example3    |     0
 ```
 
+## Preprocessing the text data.
+To make text data usable to maschines, it need to be preprocessed. To ensure state of the art maschine learning, we make use of large, pre-trained transformers pulled from [🤗 Hugging Face](https://huggingface.co/) to preprocess text data..
+If you don't know what all that means: don't worry! All you need to do then is to choose between speed and accuracy by choosing one of our suggestions.
+- distilbert-base-uncased -> Very accurate, state of the art method, but slow (especially on large datasets). [ENG]")
+- all-MiniLM-L6-v2 -> Faster, but still relatively accurate. [ENG]")
+- Custom model -> Input your own model from https://huggingface.co/.")
 
+By choosing "Custom model" you can always just use a different model from Hugging Face! After you have choosen your model, the text data will be processed.
+
+## Building the maschine learning model 🚀
+And that's it! Now it is time to grab a coffee, lean back and watch as your model is training on the data. You can see the training progress below.
 ```
-Please enter the language of your data in ISO2 code
-
-> EN
-```
-
-```
-For english data, you need to have the en_core_web_sm data loaded; if you haven't done so yet, please run "$python -m spacy download en_core_web_sm" and confirm with "y" afterward
-
-> y
-```
-
-```
-We're now loading the models to embed your data. Please enter the configuration string (suggestion: "distilbert-base-uncased")
-
-> 1 - distilbert-base-uncased -> Very accurate, state of the art method, but slow (especially on large datasets). [ENG]")
-> 2 - all-MiniLM-L6-v2 -> Faster, but still relatively accurate. [ENG]")
-> 3 - Custom model -> Input your own model from https://huggingface.co/.")
-```
-
-```
-Cool, we're ready to train 🚀
-Now is the time to grab a coffee as your model is training on the data. You can see the training progress below.
-
 76%|████████████████████████        | 7568/10000 [00:33<00:10, 229.00it/s]
 ```
 
+After the training is done, we will automatically test you model and tell you, how well it is doing!
 ```
-We've trained and validated your model.
-
-            Precision   Recall  F-Score
-Positive    90.0%       90.0%   90.0%
-Neutral     90.0%       90.0%   90.0%
-Negative    90.0%       90.0%   90.0%
+            Accuracy    Error     AUC
+Positive    90.0%       90.0%     90.0%
+Neutral     90.0%       90.0%     90.0%
+Negative    90.0%       90.0%     90.0%
 
 The Dockerfile to run this service has been stored to "training_data-distilbert-base-uncased.Dockerfile". You can find a detailed report of the performance under "training_data-distilbert-base-uncased.xlsx".
 ```
+## Creating a container with Docker
 
-Finally, you can build an image from the Dockerfile via running `$ docker build -t my_app`, and then launch the service by `$ docker run -dp 3000:3000 my_app`. You can see the swagger documentation on `localhost:3000/docs` - congrats, you just build your first ML service ✋
+Now, all the components are ready and it's time to bring them all together. Building the container is super easy! Make sure, that Docker Desktop is running on your maschine. You can get it [here](https://www.docker.com/products/docker-desktop/). Next, running the following command:
+```
+$ bash container
+```
+Or, if you dont have bash:
+```
+$ docker build -t automl-container-backend .
+$ docker run -d -p 7531:7531 automl-container-backend
 
-## Configuration strings
-We're making use of large, pre-trained transformers pulled from [🤗 Hugging Face](https://huggingface.co/). If you're not sure which string to use, here are some high-level recommendations:
-- Multiple languages: `bert-base-multilingual-uncased`
-- English language + generic domain: `distilbert-base-uncased`
-- German language: `bert-base-german-uncased`
+```
+Building the container can take a couple of minutes. The perfect opportunity to grab yet another cup of coffee!
 
-You can find plenty of other (domain-specific) language models on Hugging Face, so give it a try.
+## (Optional) testing out the model using a user interface with streamlit
+
 
 ## Roadmap
-- [x] Build basic CLI to capture the data
+- [ ] Build basic CLI to capture the data
 - [ ] Build mappings for language data (e.g. `EN` -> ask for `en_core_web_sm` AND recommend using `distilbert-base-uncased`)
-- [x] Implement AutoML for classification (training, validation and storage of model)
+- [ ] Implement AutoML for classification (training, validation and storage of model)
 - [ ] Implement AutoML for ner (training, validation and storage of model)
 - [ ] Wrap instructions for build in a Dockerfile
 - [ ] Add sample projects (twitter sentiment analysis, intent classification and some named entity recognition) and publish them in some posts
-- [x] Publish the repository and set up new roadmap
+- [ ] Publish the repository and set up new roadmap
 
 If you want to have something added, feel free to open an [issue](https://github.com/code-kern-ai/automl-docker/issues).
 

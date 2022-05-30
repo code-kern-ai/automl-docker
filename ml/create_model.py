@@ -186,17 +186,14 @@ print("- - - - - - - - - - - - - - - -")
 print(f">> The confusion matrix is: {confusion_matrix(y_test, y_pred)}")
 
 config = ConfigParser()
-
 config['Data'] = {
     'path_to_data': PATH,
     'features': COL_TEXTS,
     'targets': COL_LABEL,
 }
-
 config['Transformer_Model'] = {
     'model_used' : model_name
 } 
-
 config['ML_Model'] = {
     'type_ml_model' : type(lr)
 }
