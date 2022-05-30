@@ -1,13 +1,6 @@
 ![!automl-docker](banner.png)
 
 # 🐳 automl-docker
-  ___________      _  __                      
- |  _______  |    | |/ /                 /\  |
- | |       | |    |   / ___ _ __ _ __   /‾‾\ |
-| |        | |    |  < / _ \ |__| |_ \        
-| |_______| |     | . \  __/ |  | | | |       
-|___________|     |_|\_\___|_|  |_| |_|       
-
 CLI-based framework to automatically build ML models from training data into a servable Docker container.
 
 ##  Set-up & Installation
