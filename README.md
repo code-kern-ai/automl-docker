@@ -4,7 +4,7 @@
 With this tool, you can easily use your data to quickly create usable, scalabe maschine learning models. This CLI-based framework offers you the ability to automatically build ML models from training data into a servable Docker container. With this tool you can: 
 - Easily create a maschine learning model.
 - Create a docker container for the model.
-- Connect to there containers with an API.
+- Connect to the container with an API.
 - (Optionally) test your model using a UI.
 
 ##  Set-up & Installation
@@ -104,7 +104,7 @@ To start the streamlit application, simply use the following command:
 $ streamlit run app/ui.py
 ```
 
-And that's it! By default, the UI will automatically connect to the previouisly build container. 
+And that's it! By default, the UI will automatically connect to the previouisly build container. You can test the UI on your local maschine, usually by going to the URL http://172.26.99.163:8501/ via the internet browser of your choice. 
 
 ## Roadmap
 - [ ] Build basic CLI to capture the data
