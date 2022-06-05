@@ -12,15 +12,18 @@ from datetime import datetime
 from configparser import ConfigParser
 
 # Sklearn libraries
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     roc_auc_score,
     accuracy_score,
     confusion_matrix,
     mean_squared_error,
 )
+
+# Import torch libraries
+import torch
+import torch.nn as nn 
+import torch.optim as optim
 
 # Embedders and Transformers
 from embedders.classification.contextual import TransformerSentenceEmbedder
@@ -92,8 +95,6 @@ COL_TEXTS = input_getter(">> Is this the correct column name? ->")
 
 # Load the data with the provided info, lower all words in the corpus
 corpus = df[COL_TEXTS].to_list()
-for i in range(len(corpus)):
-    corpus[i] = corpus[i].lower()
 
 # Get the names of the labels
 print(" ")
@@ -114,24 +115,24 @@ while True:
         model_name = 'distilbert-base-uncased'
         print(f">> Creating embeddings using '{model_name}' model, this might take a couple of minutes ...")
         sent_transformer = TransformerSentenceEmbedder(model_name)
-        embeds = sent_transformer.transform(corpus)
-        embeddings = np.array(embeds)
+        word_embeddings = sent_transformer.transform(corpus)
+        embeddings = np.array(word_embeddings)
         break
 
     elif choice == '2':
         model_name = 'all-MiniLM-L6-v2'
         print(f">> Creating embeddings using '{model_name}' model, this might take a couple of minutes ...")
         sent_transformer = TransformerSentenceEmbedder(model_name)
-        embeds = sent_transformer.transform(corpus)
-        embeddings = np.array(embeds)
+        word_embeddings = sent_transformer.transform(corpus)
+        embeddings = np.array(word_embeddings)
         break
 
     elif choice == '3':
         model_name = input('>> Please input the model name you would like to use: ')
         print(f">> Creating embeddings using {model_name} model, this might take a couple of minutes ...")
         sent_transformer = TransformerSentenceEmbedder(model_name)
-        embeds = sent_transformer.transform(corpus)
-        embeddings = np.array(embeds)
+        word_embeddings = sent_transformer.transform(corpus)
+        embeddings = np.array(word_embeddings)
         break
 
     else:
@@ -139,38 +140,45 @@ while True:
         pass
 
 # Setting up features and labels
-features = embeddings
-labels = df[COL_LABEL]
-labels = np.array(labels)
+y = df[COL_LABEL].values
+
+target = torch.from_numpy(y)
+target = target.unsqueeze(1)
+target = target.float()
+
+features = torch.from_numpy(embeddings)
 
 # Splitting the data
-X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
-print(">> Training machine learning model ...")
-print(" ")
-lr = LogisticRegression(dual=False)
+# Simple dense neural network with relu activation function
+input_shape = X_train.shape[1]
+model = nn.Sequential(nn.Linear(input_shape, 128),
+                      nn.ReLU(),
+                      nn.Linear(128, 1),
+                      nn.Sigmoid())
 
-# Hyper parameter space is relatively small
+# Set up loss funtion and optimizer to enable the model to learn
+criteron = nn.BCELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 
-hyperparameters = {
-    "C": np.arange(0, 4),
-    "penalty": ["l2", "none"],
-    "max_iter": [100, 150, 250, 500],
-}
+# Train the model with 100 epochs
+epochs = 100
+losses = []
+for epoch in range(epochs):
+    pred_y = model(X_train.float())
+    loss = criteron(pred_y, y_train)
+    losses.append(loss.item())
 
-# Initiate and fit random search cv
-lr_clf = RandomizedSearchCV(
-    estimator=lr, param_distributions=hyperparameters, cv=3, n_iter=15, verbose=2
-)
-lr_clf.fit(X_train, y_train)
-y_pred = lr_clf.predict(X_test)
+    model.zero_grad()
+    loss.backward()
 
-# Save the model to current directory
-with open(f"ml/Logistic Regression.pkl", "wb") as fid:
-    pickle.dump(lr_clf, fid)
-    print(" ")
-    print(f">> Saved model to {os.path.abspath(os.getcwd())}")
-    print(" ")
+    optimizer.step()
+
+# Create predictions on unseen data for evaluation
+y_pred = model(X_test.float())
+y_pred = y_pred.detach().cpu().numpy()
+y_pred = (y_pred > 0.5).astype('int32')
 
 # Generate evaluation metrics
 print(" ")
@@ -195,7 +203,7 @@ config['Transformer_Model'] = {
     'model_used' : model_name
 } 
 config['ML_Model'] = {
-    'type_ml_model' : type(lr)
+    'type_ml_model' : type(model)
 }
 
 with open('ml/config.ini', 'w') as f:
