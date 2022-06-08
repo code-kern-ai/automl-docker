@@ -92,8 +92,8 @@ COL_TEXTS = input_getter(">> Is this the correct column name? ->")
 
 # Load the data with the provided info, lower all words in the corpus
 corpus = df[COL_TEXTS].to_list()
-for i in range(len(corpus)):
-    corpus[i] = corpus[i].lower()
+# for i in range(len(corpus)):
+#     corpus[i] = corpus[i].lower()
 
 # Get the names of the labels
 print(" ")
