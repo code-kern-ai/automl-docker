@@ -35,4 +35,4 @@ def predict(data: Text):
 
     # Use ml model to create predictions
     model = pickle.load(open("ml/Logistic Regression.pkl", "rb"))
-    return model.predict(embeddings).tolist()
+    return model.predict(embeddings).tolist(), model.predict_proba(embeddings).tolist()
