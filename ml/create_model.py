@@ -12,15 +12,16 @@ from datetime import datetime
 from configparser import ConfigParser
 
 # Sklearn libraries
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     roc_auc_score,
     accuracy_score,
     confusion_matrix,
     mean_squared_error,
 )
+
+# Import torch libraries
+import xgboost as xgb
 
 # Embedders and Transformers
 from embedders.classification.contextual import TransformerSentenceEmbedder
@@ -82,18 +83,27 @@ print(" ")
 # Get the path where the data is stored
 PATH = input_getter(">> Is this the correct path? ->")
 df = pd.read_csv(PATH)
+df = df.fillna('Nicht verfuegbar')
 print(">> Data successfully loaded!")
 
 
 # Get the name of the features
 print(" ")
-print(">> Please provide the column name in which the texts are store in!")
+print(">> Please provide one or multiple column names!")
 COL_TEXTS = input_getter(">> Is this the correct column name? ->")
 
-# Load the data with the provided info, lower all words in the corpus
-corpus = df[COL_TEXTS].to_list()
-for i in range(len(corpus)):
-    corpus[i] = corpus[i].lower()
+# Load the data with the provided info, preprocess the text corpus
+# If multiple columns are provided, the will be combinded for preprocessing
+corpus = df[COL_TEXTS.split()]
+if len(corpus.columns) > 1:
+    corpus = corpus[corpus.columns].apply(
+    lambda x: ','.join(x.dropna().astype(str)),
+    axis=1
+    )
+    corpus = corpus.tolist()
+
+else:
+    corpus = corpus.squeeze().tolist()
 
 # Get the names of the labels
 print(" ")
@@ -114,24 +124,24 @@ while True:
         model_name = 'distilbert-base-uncased'
         print(f">> Creating embeddings using '{model_name}' model, this might take a couple of minutes ...")
         sent_transformer = TransformerSentenceEmbedder(model_name)
-        embeds = sent_transformer.transform(corpus)
-        embeddings = np.array(embeds)
+        word_embeddings = sent_transformer.transform(corpus)
+        embeddings = np.array(word_embeddings)
         break
 
     elif choice == '2':
         model_name = 'all-MiniLM-L6-v2'
         print(f">> Creating embeddings using '{model_name}' model, this might take a couple of minutes ...")
         sent_transformer = TransformerSentenceEmbedder(model_name)
-        embeds = sent_transformer.transform(corpus)
-        embeddings = np.array(embeds)
+        word_embeddings = sent_transformer.transform(corpus)
+        embeddings = np.array(word_embeddings)
         break
 
     elif choice == '3':
         model_name = input('>> Please input the model name you would like to use: ')
         print(f">> Creating embeddings using {model_name} model, this might take a couple of minutes ...")
         sent_transformer = TransformerSentenceEmbedder(model_name)
-        embeds = sent_transformer.transform(corpus)
-        embeddings = np.array(embeds)
+        word_embeddings = sent_transformer.transform(corpus)
+        embeddings = np.array(word_embeddings)
         break
 
     else:
@@ -139,38 +149,32 @@ while True:
         pass
 
 # Setting up features and labels
+target = df[COL_LABEL].values
 features = embeddings
-labels = df[COL_LABEL]
-labels = np.array(labels)
 
 # Splitting the data
-X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
-print(">> Training machine learning model ...")
-print(" ")
-lr = LogisticRegression(dual=False)
+# Param grid for random search
+params = {
+        'n_estimators' : [200, 250, 300, 400, 450, 500, 550, 600, 650, 700],
+        'min_child_weight': [1, 5, 10],
+        'gamma': [0.01, 0.1, 0.5, 1, 1.5, 2, 5],
+        'subsample': [0.6, 0.8, 1.0],
+        'learning_rate': [0.001, 0.005, 0.01, 0.1],
+        'max_depth': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        'random_state': [42]
+        }
 
-# Hyper parameter space is relatively small
+# Instantiate and test the model
+model = xgb.XGBClassifier()
+rs_model = RandomizedSearchCV(model, param_distributions=params, n_iter=10, scoring='roc_auc', n_jobs=4, cv=3, verbose=3, random_state=42)
+rs_model.fit(X_train, y_train)
+y_pred = rs_model.predict(X_test)
 
-hyperparameters = {
-    "C": np.arange(0, 4),
-    "penalty": ["l2", "none"],
-    "max_iter": [100, 150, 250, 500],
-}
-
-# Initiate and fit random search cv
-lr_clf = RandomizedSearchCV(
-    estimator=lr, param_distributions=hyperparameters, cv=3, n_iter=15, verbose=2
-)
-lr_clf.fit(X_train, y_train)
-y_pred = lr_clf.predict(X_test)
-
-# Save the model to current directory
-with open(f"ml/Logistic Regression.pkl", "wb") as fid:
-    pickle.dump(lr_clf, fid)
-    print(" ")
-    print(f">> Saved model to {os.path.abspath(os.getcwd())}")
-    print(" ")
+# Save model
+with open('ml/model.pkl', 'wb') as handle:
+    pickle.dump(rs_model, handle)
 
 # Generate evaluation metrics
 print(" ")
@@ -195,7 +199,7 @@ config['Transformer_Model'] = {
     'model_used' : model_name
 } 
 config['ML_Model'] = {
-    'type_ml_model' : type(lr)
+    'type_ml_model' : type(model)
 }
 
 with open('ml/config.ini', 'w') as f:
