@@ -107,12 +107,12 @@ $ streamlit run app/ui.py
 And that's it! By default, the UI will automatically connect to the previouisly build container. You can test the UI on your local maschine, usually by going to the URL http://172.26.99.163:8501/ via the internet browser of your choice. 
 
 ## Roadmap
-- [ ] Build basic CLI to capture the data
-- [ ] Build mappings for language data (e.g. `EN` -> ask for `en_core_web_sm` AND recommend using `distilbert-base-uncased`)
-- [ ] Implement AutoML for classification (training, validation and storage of model)
+- [x] Build basic CLI to capture the data
+- [x] Build mappings for language data (e.g. `EN` -> ask for `en_core_web_sm` AND recommend using `distilbert-base-uncased`)
+- [x] Implement AutoML for classification (training, validation and storage of model)
 - [ ] Implement AutoML for ner (training, validation and storage of model)
 - [ ] Wrap instructions for build in a Dockerfile
-- [ ] Add sample projects (twitter sentiment analysis, intent classification and some named entity recognition) and publish them in some posts
+- [ ] Add sample projects (clickbait dataset) and publish them in some posts
 - [ ] Publish the repository and set up new roadmap
 
 If you want to have something added, feel free to open an [issue](https://github.com/code-kern-ai/automl-docker/issues).

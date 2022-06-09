@@ -2,24 +2,24 @@
 from fastapi import FastAPI, responses
 from pydantic import BaseModel
 import pickle
+from configparser import ConfigParser
 
 from embedders.classification.contextual import TransformerSentenceEmbedder
 
 # Instantiate fastapi app
 api = FastAPI()
 
-
 class Text(BaseModel):
     text: list
 
-
-transformer = TransformerSentenceEmbedder("distilbert-base-uncased")
-
+config = ConfigParser()
+config.read('ml/config.ini')
+model = config['Transformer_Model']['model_used']
+transformer = TransformerSentenceEmbedder(model)
 
 @api.get("/")
 def root():
     return responses.RedirectResponse(url="/docs")
-
 
 @api.post("/predict")  # response_model=Predictions
 def predict(data: Text):
@@ -34,5 +34,5 @@ def predict(data: Text):
     embeddings = transformer.transform(corpus)
 
     # Use ml model to create predictions
-    model = pickle.load(open("ml/Logistic Regression.pkl", "rb"))
-    return model.predict_proba(embeddings).tolist()
+    model = pickle.load(open("ml/model.pkl", "rb"))
+    return model.predict(embeddings).tolist(), model.predict_proba(embeddings).tolist()

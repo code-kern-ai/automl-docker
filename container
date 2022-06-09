@@ -10,4 +10,4 @@ echo -ne '\t\t [done]\n'
 echo -ne 'starting...'
 docker run -d -p 7531:7531 automl-container-backend
 echo -ne '\t\t\t [done]\n'
-docker logs automl-container -f
+docker logs automl-container-backend -f

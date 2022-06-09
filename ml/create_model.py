@@ -12,7 +12,7 @@ from datetime import datetime
 from configparser import ConfigParser
 
 # Sklearn libraries
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.metrics import (
     roc_auc_score,
     accuracy_score,
@@ -21,9 +21,7 @@ from sklearn.metrics import (
 )
 
 # Import torch libraries
-import torch
-import torch.nn as nn 
-import torch.optim as optim
+import xgboost as xgb
 
 # Embedders and Transformers
 from embedders.classification.contextual import TransformerSentenceEmbedder
@@ -85,16 +83,27 @@ print(" ")
 # Get the path where the data is stored
 PATH = input_getter(">> Is this the correct path? ->")
 df = pd.read_csv(PATH)
+df = df.fillna('Nicht verfuegbar')
 print(">> Data successfully loaded!")
 
 
 # Get the name of the features
 print(" ")
-print(">> Please provide the column name in which the texts are store in!")
+print(">> Please provide one or multiple column names!")
 COL_TEXTS = input_getter(">> Is this the correct column name? ->")
 
-# Load the data with the provided info, lower all words in the corpus
-corpus = df[COL_TEXTS].to_list()
+# Load the data with the provided info, preprocess the text corpus
+# If multiple columns are provided, the will be combinded for preprocessing
+corpus = df[COL_TEXTS.split()]
+if len(corpus.columns) > 1:
+    corpus = corpus[corpus.columns].apply(
+    lambda x: ','.join(x.dropna().astype(str)),
+    axis=1
+    )
+    corpus = corpus.tolist()
+
+else:
+    corpus = corpus.squeeze().tolist()
 
 # Get the names of the labels
 print(" ")
@@ -140,45 +149,32 @@ while True:
         pass
 
 # Setting up features and labels
-y = df[COL_LABEL].values
-
-target = torch.from_numpy(y)
-target = target.unsqueeze(1)
-target = target.float()
-
-features = torch.from_numpy(embeddings)
+target = df[COL_LABEL].values
+features = embeddings
 
 # Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
-# Simple dense neural network with relu activation function
-input_shape = X_train.shape[1]
-model = nn.Sequential(nn.Linear(input_shape, 128),
-                      nn.ReLU(),
-                      nn.Linear(128, 1),
-                      nn.Sigmoid())
+# Param grid for random search
+params = {
+        'n_estimators' : [200, 250, 300, 400, 450, 500, 550, 600, 650, 700],
+        'min_child_weight': [1, 5, 10],
+        'gamma': [0.01, 0.1, 0.5, 1, 1.5, 2, 5],
+        'subsample': [0.6, 0.8, 1.0],
+        'learning_rate': [0.001, 0.005, 0.01, 0.1],
+        'max_depth': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        'random_state': [42]
+        }
 
-# Set up loss funtion and optimizer to enable the model to learn
-criteron = nn.BCELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+# Instantiate and test the model
+model = xgb.XGBClassifier()
+rs_model = RandomizedSearchCV(model, param_distributions=params, n_iter=10, scoring='roc_auc', n_jobs=4, cv=3, verbose=3, random_state=42)
+rs_model.fit(X_train, y_train)
+y_pred = rs_model.predict(X_test)
 
-# Train the model with 100 epochs
-epochs = 100
-losses = []
-for epoch in range(epochs):
-    pred_y = model(X_train.float())
-    loss = criteron(pred_y, y_train)
-    losses.append(loss.item())
-
-    model.zero_grad()
-    loss.backward()
-
-    optimizer.step()
-
-# Create predictions on unseen data for evaluation
-y_pred = model(X_test.float())
-y_pred = y_pred.detach().cpu().numpy()
-y_pred = (y_pred > 0.5).astype('int32')
+# Save model
+with open('ml/model.pkl', 'wb') as handle:
+    pickle.dump(rs_model, handle)
 
 # Generate evaluation metrics
 print(" ")
