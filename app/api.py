@@ -1,7 +1,8 @@
 # Import statements go here
+import pickle
+import numpy as np
 from fastapi import FastAPI, responses
 from pydantic import BaseModel
-import pickle
 from configparser import ConfigParser
 
 from embedders.classification.contextual import TransformerSentenceEmbedder
@@ -13,7 +14,7 @@ class Text(BaseModel):
     text: list
 
 config = ConfigParser()
-config.read('ml/config.ini')
+config.read('/home/leonardpuettmann/repos/automl-docker/ml/config.ini')
 model = config['Transformer_Model']['model_used']
 transformer = TransformerSentenceEmbedder(model)
 
@@ -34,5 +35,14 @@ def predict(data: Text):
     embeddings = transformer.transform(corpus)
 
     # Use ml model to create predictions
-    model = pickle.load(open("ml/model.pkl", "rb"))
-    return model.predict(embeddings).tolist(), model.predict_proba(embeddings).tolist()
+    model = pickle.load(open("/home/leonardpuettmann/repos/automl-docker/ml/model.pkl", "rb"))
+    predictions = model.predict(embeddings).tolist()
+
+    predictions = model.predict(embeddings).tolist()
+    probabilities = model.predict_proba(embeddings)
+    probabilities_max = np.max(probabilities, axis=1).tolist()
+    probabilities_rounded = [round(prob, 2) for prob in probabilities_max]
+    probabilities_pct = [prob * 100 for prob in probabilities_rounded]
+    
+    dictionary = dict(zip(probabilities_pct, predictions))
+    return dictionary

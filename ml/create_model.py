@@ -77,7 +77,7 @@ dt_string = now.strftime("%d-%m-%Y %H-%M")
 print(">> Please select the path to where your data is stored!")
 print(" ")
 print(">> On Windows the path might look like this  ->  C:\\Users\\yourname\\data\\training_data.csv")
-print(">> On MacOS/ Linux the path might look like this  ->  home/user/data/training_data.csv")
+print(">> On MacOS/ Linux the path might look like this  ->  /home/user/data/training_data.csv")
 print(" ")
 
 # Get the path where the data is stored
@@ -90,7 +90,8 @@ print(">> Data successfully loaded!")
 # Get the name of the features
 print(" ")
 print(">> Please provide one or multiple column names!")
-COL_TEXTS = input_getter(">> Is this the correct column name? ->")
+print(">> You may write: column 1 column 2 column3")
+COL_TEXTS = input_getter(">> Are these columns correct? ->")
 
 # Load the data with the provided info, preprocess the text corpus
 # If multiple columns are provided, the will be combinded for preprocessing
