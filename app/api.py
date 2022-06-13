@@ -16,6 +16,7 @@ class Text(BaseModel):
 config = ConfigParser()
 config.read('/home/leonardpuettmann/repos/automl-docker/ml/config.ini')
 model = config['Transformer_Model']['model_used']
+use_encoder = config['Encoder']['usage']
 transformer = TransformerSentenceEmbedder(model)
 
 @api.get("/")
@@ -36,13 +37,20 @@ def predict(data: Text):
 
     # Use ml model to create predictions
     model = pickle.load(open("/home/leonardpuettmann/repos/automl-docker/ml/model.pkl", "rb"))
-    predictions = model.predict(embeddings).tolist()
 
     predictions = model.predict(embeddings).tolist()
     probabilities = model.predict_proba(embeddings)
     probabilities_max = np.max(probabilities, axis=1).tolist()
-    probabilities_rounded = [round(prob, 2) for prob in probabilities_max]
+    probabilities_rounded = [round(prob, 4) for prob in probabilities_max]
     probabilities_pct = [prob * 100 for prob in probabilities_rounded]
+
+    encode = pickle.load(open("/home/leonardpuettmann/repos/automl-docker/ml/encoder.pkl", "rb"))
+    if use_encoder == 'True':
+        predictions_labels = encode.inverse_transform(predictions).tolist()
+    else:
+        predictions_labels = predictions
     
-    dictionary = dict(zip(probabilities_pct, predictions))
-    return dictionary
+    results = []
+    for i, j in zip(predictions_labels, probabilities_pct):
+        results.append({'label': i, 'confidence': f'{j} %'})
+    return results

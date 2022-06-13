@@ -91,7 +91,7 @@ print(">> Data successfully loaded!")
 # Get the name of the features
 print(" ")
 print(">> Please provide one or multiple column names!")
-print(">> You may write: column 1 column 2 column3")
+print(">> You may write: column1 column2 column3")
 COL_TEXTS = input_getter(">> Are these columns correct? ->")
 
 # Load the data with the provided info, preprocess the text corpus
@@ -116,8 +116,9 @@ target = df[COL_LABEL].values
 if target.dtype == 'O' or str:
     encoder = LabelEncoder()
     targets = encoder.fit_transform(target)
+    encoder_usage = True
 else:
-    pass
+    encoder_usage = False
 
 # Choose a transformer model to create embeddings
 while True:
@@ -161,7 +162,7 @@ while True:
 features = embeddings
 
 # Splitting the data
-X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=42)
 
 # Param grid for random search
 params = {
@@ -183,6 +184,10 @@ y_pred = rs_model.predict(X_test)
 # Save model
 with open('ml/model.pkl', 'wb') as handle:
     pickle.dump(rs_model, handle)
+
+# Save encoder
+with open('ml/encoder.pkl', 'wb') as handle:
+    pickle.dump(encoder, handle)
 
 # Generate evaluation metrics
 print(" ")
@@ -208,6 +213,9 @@ config['Transformer_Model'] = {
 } 
 config['ML_Model'] = {
     'type_ml_model' : type(model)
+}
+config['Encoder'] = {
+    'usage' : encoder_usage
 }
 
 with open('ml/config.ini', 'w') as f:
