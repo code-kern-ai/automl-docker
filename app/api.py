@@ -44,13 +44,17 @@ def predict(data: Text):
     probabilities_rounded = [round(prob, 4) for prob in probabilities_max]
     probabilities_pct = [prob * 100 for prob in probabilities_rounded]
 
-    encode = pickle.load(open("/home/leonardpuettmann/repos/automl-docker/ml/encoder.pkl", "rb"))
-    if use_encoder == 'True':
-        predictions_labels = encode.inverse_transform(predictions).tolist()
-    else:
-        predictions_labels = predictions
-    
     results = []
-    for i, j in zip(predictions_labels, probabilities_pct):
-        results.append({'label': i, 'confidence': f'{j} %'})
+    if use_encoder == 'True':
+        encode = pickle.load(open("/home/leonardpuettmann/repos/automl-docker/ml/encoder.pkl", "rb"))
+        predictions_labels = encode.inverse_transform(predictions).tolist()
+
+        for i, j in zip(predictions_labels, probabilities_pct):
+            results.append({'label': i, 'confidence': j})
+            
+    else:
+        for i, j in zip(predictions, probabilities_pct):
+            results.append({'label': i, 'confidence': j})
+    
+
     return results
