@@ -13,6 +13,7 @@ from configparser import ConfigParser
 
 # Sklearn libraries
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import (
     roc_auc_score,
     accuracy_score,
@@ -74,7 +75,7 @@ now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y %H-%M")
 
 # Read in the data with pandas, then convert text corpus to list
-print(">> Please select the path to where your data is stored!")
+print(">> Please enter the path to where your data is stored!")
 print(" ")
 print(">> On Windows the path might look like this  ->  C:\\Users\\yourname\\data\\training_data.csv")
 print(">> On MacOS/ Linux the path might look like this  ->  /home/user/data/training_data.csv")
@@ -110,6 +111,13 @@ else:
 print(" ")
 print(">> Please provide the column name in which the labels are store in!")
 COL_LABEL = input_getter(">> Is this the correct column name? ->")
+target = df[COL_LABEL].values
+
+if target.dtype == 'O' or str:
+    encoder = LabelEncoder()
+    targets = encoder.fit_transform(target)
+else:
+    pass
 
 # Choose a transformer model to create embeddings
 while True:
@@ -150,7 +158,6 @@ while True:
         pass
 
 # Setting up features and labels
-target = df[COL_LABEL].values
 features = embeddings
 
 # Splitting the data
