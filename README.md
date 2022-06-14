@@ -66,7 +66,7 @@ By choosing "Custom model" you can always just use a different model from Huggin
 ## Building the machine learning model 🚀
 And that's it! Now it is time to grab a coffee, lean back and watch as your model is training on the data. You can see the training progress below.
 ```
-76%|████████████████████████        | 7568/10000 [00:33<00:10, 229.00it/s]
+76%|████████████████████████        | 756/1000 [00:33<00:10, 229.00it/s]
 ```
 
 After the training is done, we will automatically test your model and tell you how well it is doing!
