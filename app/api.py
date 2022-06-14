@@ -10,18 +10,22 @@ from embedders.classification.contextual import TransformerSentenceEmbedder
 # Instantiate fastapi app
 api = FastAPI()
 
+
 class Text(BaseModel):
     text: list
 
+
 config = ConfigParser()
-config.read('/home/leonardpuettmann/repos/automl-docker/ml/config.ini')
-model = config['Transformer_Model']['model_used']
-use_encoder = config['Encoder']['usage']
+config.read("/home/leonardpuettmann/repos/automl-docker/ml/config.ini")
+model = config["Transformer_Model"]["model_used"]
+use_encoder = config["Encoder"]["usage"]
 transformer = TransformerSentenceEmbedder(model)
+
 
 @api.get("/")
 def root():
     return responses.RedirectResponse(url="/docs")
+
 
 @api.post("/predict")  # response_model=Predictions
 def predict(data: Text):
@@ -36,7 +40,9 @@ def predict(data: Text):
     embeddings = transformer.transform(corpus)
 
     # Use ml model to create predictions
-    model = pickle.load(open("/home/leonardpuettmann/repos/automl-docker/ml/model.pkl", "rb"))
+    model = pickle.load(
+        open("/home/leonardpuettmann/repos/automl-docker/ml/model.pkl", "rb")
+    )
 
     predictions = model.predict(embeddings).tolist()
     probabilities = model.predict_proba(embeddings)
@@ -45,16 +51,17 @@ def predict(data: Text):
     probabilities_pct = [prob * 100 for prob in probabilities_rounded]
 
     results = []
-    if use_encoder == 'True':
-        encode = pickle.load(open("/home/leonardpuettmann/repos/automl-docker/ml/encoder.pkl", "rb"))
+    if use_encoder == "True":
+        encode = pickle.load(
+            open("/home/leonardpuettmann/repos/automl-docker/ml/encoder.pkl", "rb")
+        )
         predictions_labels = encode.inverse_transform(predictions).tolist()
 
         for i, j in zip(predictions_labels, probabilities_pct):
-            results.append({'label': i, 'confidence': j})
-            
+            results.append({"label": i, "confidence": j})
+
     else:
         for i, j in zip(predictions, probabilities_pct):
-            results.append({'label': i, 'confidence': j})
-    
+            results.append({"label": i, "confidence": j})
 
     return results
