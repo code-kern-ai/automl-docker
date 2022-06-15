@@ -80,7 +80,8 @@ def feature_getter(df):
     while True:
         try:
             features_input = input("> ")
-            if pd.Series(features_input.split()).isin(df.columns).all():
+            features_cleaned = [i.strip() for i in features_input.split(sep=",")]
+            if pd.Series(features_cleaned).isin(df.columns).all():
                 print(">> Loading columns...")
                 break
             else:
@@ -88,7 +89,7 @@ def feature_getter(df):
                 pass
         except:
             pass
-    return features_input
+    return features_cleaned
 
 def target_getter(df):
     """
@@ -127,15 +128,15 @@ df = df.fillna('Nicht verfuegbar')
 
 # Get the name of the features
 print(" ")
-print(">> Please provide one or multiple column names!")
-print(">> You may write: column1 column2 column3")
+print(">> Please provide the feature columns for the training data!")
+print(">> You may write: column1, column 2, column_3,")
 print(f">> Found columns: {df.columns}")
 print(" ")
 feature_columns = feature_getter(df)
 
 # Load the data with the provided info, preprocess the text corpus
 # If multiple columns are provided, the will be combinded for preprocessing
-corpus = df[feature_columns.split()]
+corpus = df[feature_columns]
 if len(corpus.columns) > 1:
     corpus = corpus[corpus.columns].apply(
     lambda x: ','.join(x.dropna().astype(str)),
