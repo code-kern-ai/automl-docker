@@ -206,18 +206,18 @@ X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size
 
 # Param grid for random search
 params = {
-        'n_estimators' : [200, 250, 300, 400, 450, 500, 550, 600, 650, 700],
+        'n_estimators' : [200, 250, 300, 400, 450, 500],
         'min_child_weight': [1, 5, 10],
-        'gamma': [0.01, 0.1, 0.5, 1, 1.5, 2, 5],
+        'gamma': [0.01, 0.1, 0.5, 1, 1.5, 2, ],
         'subsample': [0.6, 0.8, 1.0],
-        'learning_rate': [0.001, 0.005, 0.01, 0.1],
-        'max_depth': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        'learning_rate': [0.005, 0.01, 0.1],
+        'max_depth': [3, 4, 5, 6, 7, 8, 9, 10],
         'random_state': [42]
         }
 
 # Instantiate and test the model
 model = xgb.XGBClassifier()
-rs_model = RandomizedSearchCV(model, param_distributions=params, n_iter=10, scoring='roc_auc', n_jobs=4, cv=3, verbose=3, random_state=42)
+rs_model = RandomizedSearchCV(model, param_distributions=params, n_iter=3, scoring='roc_auc', cv=3, verbose=3, random_state=42)
 rs_model.fit(X_train, y_train)
 y_pred = rs_model.predict(X_test)
 
