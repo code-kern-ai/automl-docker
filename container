@@ -4,10 +4,10 @@ docker stop automl-container-backend
 echo -ne '\t [done]\n'
 
 echo -ne 'building container...'
-docker build -t automl-container-backend .
+docker build -t automl-container-backend . --name automl-container
 echo -ne '\t\t [done]\n'
 
 echo -ne 'starting...'
-docker run -d -p 7531:7531 automl-container-backend
+docker run -d -p 7531:7531 automl-container-backend 
 echo -ne '\t\t\t [done]\n'
-docker logs automl-container-backend -f
+docker logs automl-container -f

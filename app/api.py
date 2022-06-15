@@ -50,11 +50,8 @@ def predict(data: Text):
         predictions_labels = encode.inverse_transform(predictions).tolist()
 
         for i, j in zip(predictions_labels, probabilities_pct):
-            results.append({'label': i, 'confidence': j})
-            
+            results.append({'label': i, 'confidence': j})   
     else:
         for i, j in zip(predictions, probabilities_pct):
             results.append({'label': i, 'confidence': j})
-    
-
     return results

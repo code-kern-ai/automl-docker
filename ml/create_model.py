@@ -7,9 +7,9 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 import pickle
-import os
 from datetime import datetime
 from configparser import ConfigParser
+from pathlib import Path
 
 # Sklearn libraries
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
@@ -47,7 +47,7 @@ print("Please visit https://github.com/code-kern-ai/automl-docker for instructio
 print(" ")
 
 
-def input_getter(path_statement):
+def file_getter():
     """
     Function to grab and validate an input from a user.
     Input should be a filepath to some data.
@@ -56,63 +56,102 @@ def input_getter(path_statement):
     path_statement -> Path of the data that should be loaded.
     """
     while True:
-        user_input = input()
-        print(path_statement, user_input)
-        path_approval = input("(y/ n) ")
-        if path_approval.lower() == "y":
-            break
-        elif path_approval.lower() == "n":
-            print(">> Enter a new path: ")
-            print(" ")
-        else:
-            print(">> Sorry, that didn't work. Please enter again: ")
-            print(" ")
-    return user_input
+        try:
+            path_input = input("> ")
+            my_file = Path(path_input)
+            if my_file.is_file():
+                print(">> File found! Loading file...")
+                break
+            else:
+                print(">> File not found, please try again!")
+                pass
+        except:
+            pass
+    return path_input
 
+def feature_getter(df):
+    """
+    Function to grab and validate multiple column names from user.
+    Input should be a pandas DataFrame.
 
+    Args:
+    df -> An already loaded pandas DataFrame.
+    """
+    while True:
+        try:
+            features_input = input("> ")
+            if pd.Series(features_input.split()).isin(df.columns).all():
+                print(">> Loading columns...")
+                break
+            else:
+                print(">> Columns not found, please try again.")
+                pass
+        except:
+            pass
+    return features_input
+
+def target_getter(df):
+    """
+    Function to grab and validate a single column name from user.
+    Input should be a pandas DataFrame.
+
+    Args:
+    df -> An already loaded pandas DataFrame.
+    """
+    while True:
+        try:
+            target_input = input("> ")
+            if target_input in df:
+                print(">> Loading column")
+                break
+            else:
+                print(">> Column not found, please try again.")  
+                pass  
+        except:
+            pass
+    return target_input
 # get datetime dd/mm/YY H:M
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y %H-%M")
 
 # Read in the data with pandas, then convert text corpus to list
 print(">> Please enter the path to where your data is stored!")
-print(" ")
 print(">> On Windows the path might look like this  ->  C:\\Users\\yourname\\data\\training_data.csv")
 print(">> On MacOS/ Linux the path might look like this  ->  /home/user/data/training_data.csv")
 print(" ")
 
 # Get the path where the data is stored
-PATH = input_getter(">> Is this the correct path? ->")
+PATH = file_getter()
 df = pd.read_csv(PATH)
 df = df.fillna('Nicht verfuegbar')
-print(">> Data successfully loaded!")
-
 
 # Get the name of the features
 print(" ")
 print(">> Please provide one or multiple column names!")
 print(">> You may write: column1 column2 column3")
-COL_TEXTS = input_getter(">> Are these columns correct? ->")
+print(f">> Found columns: {df.columns}")
+print(" ")
+feature_columns = feature_getter(df)
 
 # Load the data with the provided info, preprocess the text corpus
 # If multiple columns are provided, the will be combinded for preprocessing
-corpus = df[COL_TEXTS.split()]
+corpus = df[feature_columns.split()]
 if len(corpus.columns) > 1:
     corpus = corpus[corpus.columns].apply(
     lambda x: ','.join(x.dropna().astype(str)),
     axis=1
     )
     corpus = corpus.tolist()
-
 else:
     corpus = corpus.squeeze().tolist()
 
 # Get the names of the labels
 print(" ")
 print(">> Please provide the column name in which the labels are store in!")
-COL_LABEL = input_getter(">> Is this the correct column name? ->")
-target = df[COL_LABEL].values
+target_column = target_getter(df)
+target = df[target_column].values
 
+# Identify if the labels are strings and need encodig
 if target.dtype == 'O' or str:
     encoder = LabelEncoder()
     targets = encoder.fit_transform(target)
