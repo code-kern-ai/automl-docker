@@ -132,5 +132,5 @@ dmypy.json
 .pyre/
 
 # Model and encoders
-ml/*.pkl
-ml/*.ini
+*.pkl
+*.ini
