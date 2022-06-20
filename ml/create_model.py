@@ -111,6 +111,7 @@ def target_getter(df):
         except:
             pass
     return target_input
+    
 # get datetime dd/mm/YY H:M
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y %H-%M")
@@ -155,7 +156,7 @@ target = df[target_column].values
 # Identify if the labels are strings and need encodig
 if target.dtype == 'O' or str:
     encoder = LabelEncoder()
-    targets = encoder.fit_transform(target)
+    target = encoder.fit_transform(target)
     encoder_usage = True
 else:
     encoder_usage = False
@@ -169,7 +170,7 @@ while True:
     print(">> 3 - Custom model -> Input your own model from https://huggingface.co/.")
     print(" ")
 
-    choice = input()
+    choice = input("> ")
     if choice == '1':
         model_name = 'distilbert-base-uncased'
         print(f">> Creating embeddings using '{model_name}' model, this might take a couple of minutes ...")
@@ -202,22 +203,23 @@ while True:
 features = embeddings
 
 # Splitting the data
-X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
 # Param grid for random search
 params = {
-        'n_estimators' : [200, 250, 300, 400, 450, 500],
+        'n_estimators' : [250, 300, 350, 400, 450, 500],
         'min_child_weight': [1, 5, 10],
-        'gamma': [0.01, 0.1, 0.5, 1, 1.5, 2, ],
+        'gamma': [0.01, 0.1, 0.5, 1, 1.5],
         'subsample': [0.6, 0.8, 1.0],
-        'learning_rate': [0.005, 0.01, 0.1],
-        'max_depth': [3, 4, 5, 6, 7, 8, 9, 10],
+        'learning_rate': [0.01, 0.1],
+        'max_depth': [2, 3, 4, 5, 6],
         'random_state': [42]
         }
 
 # Instantiate and test the model
+print(" ")
 model = xgb.XGBClassifier()
-rs_model = RandomizedSearchCV(model, param_distributions=params, n_iter=3, scoring='roc_auc', cv=3, verbose=3, random_state=42)
+rs_model = RandomizedSearchCV(model, param_distributions=params, n_iter=3, scoring='accuracy', cv=3, verbose=3)
 rs_model.fit(X_train, y_train)
 y_pred = rs_model.predict(X_test)
 
@@ -237,8 +239,6 @@ print("- - - - - - - - - - - - - - - -")
 print(f">> Model accuracy is: {round(accuracy_score(y_test, y_pred), 2) * 100} %")
 print("- - - - - - - - - - - - - - - -")
 print(f">> Mean squared error is: {round(np.sqrt(mean_squared_error(y_test, y_pred)), 2)}")
-print("- - - - - - - - - - - - - - - -")
-print(f">> AUC is: {round(roc_auc_score(y_test, y_pred), 2)}")
 print("- - - - - - - - - - - - - - - -")
 print(f">> The confusion matrix is: {confusion_matrix(y_test, y_pred)}")
 

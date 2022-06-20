@@ -130,3 +130,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Model and encoders
+/home/leonardpuettmann/repos/automl-docker/ml/model.pkl
+/home/leonardpuettmann/repos/automl-docker/ml/encoder.pkl

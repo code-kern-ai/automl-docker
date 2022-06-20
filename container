@@ -1,10 +1,10 @@
 #!/bin/bash
 echo -ne 'stopping old container...'
-docker stop automl-container-backend
+docker stop automl-container-backend 
 echo -ne '\t [done]\n'
 
 echo -ne 'building container...'
-docker build -t automl-container-backend . --name automl-container
+docker build -t automl-container-backend  . 
 echo -ne '\t\t [done]\n'
 
 echo -ne 'starting...'
