@@ -10,6 +10,7 @@ import pandas as pd
 import pickle
 from datetime import datetime
 from configparser import ConfigParser
+from pathlib import Path
 
 # Sklearn libraries
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
@@ -38,7 +39,7 @@ maintained by Kern AI (please visit https://github.com/code-kern-ai/automl-docke
 )
 
 
-def input_getter(path_statement):
+def file_getter():
     """
     Function to grab and validate an input from a user.
     Input should be a filepath to some data.
@@ -47,65 +48,106 @@ def input_getter(path_statement):
     path_statement -> Path of the data that should be loaded.
     """
     while True:
-        user_input = input("> ")
-        print(path_statement, user_input, "(y/n)")
-        path_approval = input("> ")
-        if path_approval.lower() == "y":
-            break
-        elif path_approval.lower() == "n":
-            print("Enter a new path:")
-        else:
-            print("Sorry, that didn't work. Please enter again:")
-    return user_input
+        try:
+            path_input = input("> ")
+            my_file = Path(path_input)
+            if my_file.is_file():
+                print("File found! Loading file...")
+                break
+            else:
+                print("File not found, please try again!")
+                pass
+        except:
+            pass
+    return path_input
 
+def feature_getter(df):
+    """
+    Function to grab and validate multiple column names from user.
+    Input should be a pandas DataFrame.
 
+    Args:
+    df -> An already loaded pandas DataFrame.
+    """
+    while True:
+        try:
+            features_input = input("> ")
+            features_cleaned = [i.strip() for i in features_input.split(sep=",")]
+            if pd.Series(features_cleaned).isin(df.columns).all():
+                print("Loading columns...")
+                break
+            else:
+                print("Columns not found, please try again.")
+                pass
+        except:
+            pass
+    return features_cleaned
+
+def target_getter(df):
+    """
+    Function to grab and validate a single column name from user.
+    Input should be a pandas DataFrame.
+
+    Args:
+    df -> An already loaded pandas DataFrame.
+    """
+    while True:
+        try:
+            target_input = input("> ")
+            if target_input in df:
+                print("Loading column")
+                break
+            else:
+                print("Column not found, please try again.")  
+                pass  
+        except:
+            pass
+    return target_input
+    
 # get datetime dd/mm/YY H:M
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y %H-%M")
 
 # Read in the data with pandas, then convert text corpus to list
 print("Please enter the path to where your data is stored!")
-print(
-    "On Windows, the path might look like this  ->  C:\\Users\\yourname\\data\\training_data.csv"
-)
-print(
-    "On MacOS or Linux, the path might look like this  ->  /home/user/data/training_data.csv"
-)
+print("On Windows the path might look like this  ->  C:\\Users\\yourname\\data\\training_data.csv")
+print("On MacOS/ Linux the path might look like this  ->  /home/user/data/training_data.csv")
+print()
 
 # Get the path where the data is stored
-PATH = input_getter("Is this the correct path? ->")
+PATH = file_getter()
 df = pd.read_csv(PATH)
-df = df.fillna("n/a").sample(100)
-print("Data successfully loaded!")
-
+df = df.fillna("n/a")
 
 # Get the name of the features
 print()
-print("Please provide one or multiple column names!")
-print("You may write: column1 column2 column3")
-COL_TEXTS = input_getter("Are these columns correct? ->")
+print("Please provide the feature columns for the training data!")
+print("You may write: column1, column 2, column_3,")
+print(f"Found columns: {df.columns}")
+print()
+feature_columns = feature_getter(df)
 
 # Load the data with the provided info, preprocess the text corpus
 # If multiple columns are provided, the will be combinded for preprocessing
-corpus = df[COL_TEXTS.split()]
+corpus = df[feature_columns]
 if len(corpus.columns) > 1:
     corpus = corpus[corpus.columns].apply(
         lambda x: ",".join(x.dropna().astype(str)), axis=1
     )
     corpus = corpus.tolist()
-
 else:
     corpus = corpus.squeeze().tolist()
 
 # Get the names of the labels
 print()
 print("Please provide the column name in which the labels are store in!")
-COL_LABEL = input_getter("Is this the correct column name? ->")
-target = df[COL_LABEL].values
+target_column = target_getter(df)
+target = df[target_column].values
 
-if target.dtype == "O" or str:
+# Identify if the labels are strings and need encodig
+if target.dtype == 'O' or str:
     encoder = LabelEncoder()
-    targets = encoder.fit_transform(target)
+    target = encoder.fit_transform(target)
     encoder_usage = True
 else:
     encoder_usage = False
@@ -114,18 +156,15 @@ else:
 while True:
     print()
     print("Please input a number to choose your method of preprocessing the text data.")
-    print(
-        "1 - distilbert-base-uncased -> Very accurate, state of the art method, but slow (especially on large datasets). [ENG]"
-    )
+    print("1 - distilbert-base-uncased -> Very accurate, state of the art method, but slow (especially on large datasets). [ENG]")
     print("2 - all-MiniLM-L6-v2 -> Faster, but still relatively accurate. [ENG]")
     print("3 - Custom model -> Input your own model from https://huggingface.co/.")
+    print()
 
     choice = input("> ")
-    if choice == "1":
-        model_name = "distilbert-base-uncased"
-        print(
-            f"Creating embeddings using '{model_name}' model, which will take some time. Maybe now is a good time to grab a coffee? ☕"
-        )
+    if choice == '1':
+        model_name = 'distilbert-base-uncased'
+        print(f"Creating embeddings using '{model_name}' model, which will take some time. Maybe now is a good time to grab a coffee? ☕")
         sent_transformer = TransformerSentenceEmbedder(model_name)
         word_embeddings = sent_transformer.transform(corpus)
         embeddings = np.array(word_embeddings)
@@ -160,33 +199,23 @@ while True:
 features = embeddings
 
 # Splitting the data
-X_train, X_test, y_train, y_test = train_test_split(
-    features, targets, test_size=0.2, random_state=42
-)
+X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
 # Param grid for random search
 params = {
-    "n_estimators": [200, 250, 300, 400, 450, 500, 550, 600, 650, 700],
-    "min_child_weight": [1, 5, 10],
-    "gamma": [0.01, 0.1, 0.5, 1, 1.5, 2, 5],
-    "subsample": [0.6, 0.8, 1.0],
-    "learning_rate": [0.001, 0.005, 0.01, 0.1],
-    "max_depth": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-    "random_state": [42],
-}
+        'n_estimators' : [250, 300, 350, 400, 450, 500],
+        'min_child_weight': [1, 5, 10],
+        'gamma': [0.01, 0.1, 0.5, 1, 1.5],
+        'subsample': [0.6, 0.8, 1.0],
+        'learning_rate': [0.01, 0.1],
+        'max_depth': [2, 3, 4, 5, 6],
+        'random_state': [42]
+        }
 
 # Instantiate and test the model
+print()
 model = xgb.XGBClassifier()
-rs_model = RandomizedSearchCV(
-    model,
-    param_distributions=params,
-    n_iter=10,
-    scoring="roc_auc",
-    n_jobs=4,
-    cv=3,
-    verbose=3,
-    random_state=42,
-)
+rs_model = RandomizedSearchCV(model, param_distributions=params, n_iter=5, scoring='accuracy', cv=3, verbose=3)
 rs_model.fit(X_train, y_train)
 y_pred = rs_model.predict(X_test)
 
@@ -206,17 +235,22 @@ print(f"Model accuracy is: {round(accuracy_score(y_test, y_pred), 2) * 100} %")
 print("- - - - - - - - - - - - - - - -")
 print(f"Mean squared error is: {round(np.sqrt(mean_squared_error(y_test, y_pred)), 2)}")
 print("- - - - - - - - - - - - - - - -")
-print(f"AUC is: {round(roc_auc_score(y_test, y_pred), 2)}")
-print("- - - - - - - - - - - - - - - -")
-print(f"The confusion matrix is:")
-for row in confusion_matrix(y_test, y_pred):
-    print(row)
+print(f"The confusion matrix is: {confusion_matrix(y_test, y_pred)}")
 
 config = ConfigParser()
-config["Data"] = {
-    "path_to_data": PATH,
-    "features": COL_TEXTS,
-    "targets": COL_LABEL,
+config['Data'] = {
+    'path_to_data': PATH,
+    'features': feature_columns,
+    'targets': target_column,
+}
+config['Transformer_Model'] = {
+    'model_used' : model_name
+} 
+config['ML_Model'] = {
+    'type_ml_model' : type(model)
+}
+config['Encoder'] = {
+    'usage' : encoder_usage
 }
 config["Transformer_Model"] = {"model_used": model_name}
 config["ML_Model"] = {"type_ml_model": type(model)}
