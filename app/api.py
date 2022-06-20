@@ -1,9 +1,9 @@
 # Import statements go here
-import pickle
 import numpy as np
 from fastapi import FastAPI, responses
 from pydantic import BaseModel
 from configparser import ConfigParser
+from util import get_model,get_encoder
 
 from embedders.classification.contextual import TransformerSentenceEmbedder
 
@@ -18,6 +18,7 @@ config.read('/automl/ml/config.ini')
 model = config['Transformer_Model']['model_used']
 use_encoder = config['Encoder']['usage']
 transformer = TransformerSentenceEmbedder(model)
+
 
 @api.get("/")
 def root():
@@ -36,7 +37,7 @@ def predict(data: Text):
     embeddings = transformer.transform(corpus)
 
     # Use ml model to create predictions
-    model = pickle.load(open("/automl//ml/model.pkl", "rb"))
+    model = get_model()
 
     predictions = model.predict(embeddings).tolist()
     probabilities = model.predict_proba(embeddings)
@@ -46,7 +47,7 @@ def predict(data: Text):
 
     results = []
     if use_encoder == 'True':
-        encode = pickle.load(open("/automl//ml/encoder.pkl", "rb"))
+        encode = get_encoder()
         predictions_labels = encode.inverse_transform(predictions).tolist()
 
         for i, j in zip(predictions_labels, probabilities_pct):
