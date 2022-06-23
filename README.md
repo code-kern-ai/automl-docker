@@ -2,10 +2,13 @@
 
 # 🐳 automl-docker
 With this beginner-friendly CLI tool, you can create containerized machine learning models from your labeled texts in minutes. With this tool you can: 
-- Easily create a mschine learning model
+- Easily create a machine learning model
 - Create a docker container for the model
 - Connect to the container with an API
 - Use your model via a UI
+
+[Watch a tutorial on YouTube](https://www.youtube.com/watch?v=IUFyCYE6cbc&ab_channel=KernAI)
+
 
 ##  Set-up & Installation
 This repository uses various libraries, such as sklearn or our [embedders library](https://github.com/code-kern-ai/embedders). In our guide, we use the [clickbait dataset](https://www.kaggle.com/datasets/amananandrai/clickbait-dataset) to illustrate how you can use `🐳 automl-docker`. The data is small and easy-to-use; of course, you can still use any other dataset.
