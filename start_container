@@ -4,7 +4,7 @@ docker stop automl-container
 echo -ne '\t [done]\n'
 
 echo -ne 'building container...'
-docker build -t automl-container-backend  . 
+docker build -t automl-container-backend . 
 echo -ne '\t [done]\n'
 
 echo -ne 'starting...'

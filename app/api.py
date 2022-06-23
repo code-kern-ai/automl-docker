@@ -1,17 +1,9 @@
 # Import statements go here
-<<<<<<< HEAD
-import numpy as np
-=======
->>>>>>> dcb15c750dc94d319897c68c20befb500e280a47
 from fastapi import FastAPI, responses
 from pydantic import BaseModel
 from configparser import ConfigParser
 from util import get_model,get_encoder
 
-<<<<<<< HEAD
-=======
-
->>>>>>> dcb15c750dc94d319897c68c20befb500e280a47
 from embedders.classification.contextual import TransformerSentenceEmbedder
 
 # Instantiate fastapi app
