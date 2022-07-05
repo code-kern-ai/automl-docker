@@ -13,7 +13,7 @@ from configparser import ConfigParser
 from pathlib import Path
 
 # Sklearn libraries
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import (
     accuracy_score,
@@ -26,6 +26,9 @@ import xgboost as xgb
 
 # Embedders and Transformers
 from embedders.classification.contextual import TransformerSentenceEmbedder
+
+# Hyperparameter optimization
+from hyperopt import tpe, STATUS_OK, Trials, hp, fmin, STATUS_OK, space_eval
 
 # https://stackoverflow.com/questions/287871/how-do-i-print-colored-text-to-the-terminal
 class bcolors:
@@ -213,27 +216,58 @@ features = embeddings
 # Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
-# Param grid for random search
-params = {
-        'n_estimators' : [250, 300, 350, 400, 450, 500],
-        'min_child_weight': [1, 5, 10],
-        'gamma': [0.01, 0.1, 0.5, 1, 1.5],
-        'subsample': [0.6, 0.8, 1.0],
-        'learning_rate': [0.01, 0.1],
-        'max_depth': [2, 3, 4, 5, 6],
-        'random_state': [42]
-        }
+# Space
+space = {
+    'learning_rate': hp.choice('learning_rate', [0.01, 0.02, 0.03, 0.04, 0.05, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]),
+    'n_estimators': hp.choice('n_estimators', [80, 90, 100, 120, 130, 140, 150, 160, 170, 200, 250, 300, 350, 400, 450, 500]),
+    'max_depth' : hp.choice('max_depth', range(3, 21, 1)),
+    'gamma' : hp.choice('gamma', [i/10.0 for i in range(0, 5)]),
+    'colsample_bytree' : hp.choice('colsample_bytree', [i/10.0 for i in range(3, 10)]),     
+    'subsample' : hp.choice('subsample', [0.6, 0.7, 0.8, 0.9, 1.0]), 
+    'min_child_weight' : hp.choice('min_child_weight', [0, 0.1, 0.2, 0.5, 1, 2, 5, 10])
+}
+
+# Set up the k-fold cross-validation
+kfold = StratifiedKFold(n_splits=3, shuffle=True, random_state=0)
+
+# Objective function
+def objective(params):
+    xgboost = xgb.XGBClassifier(seed=0, **params)
+    scores = cross_val_score(xgboost, X_train, y_train, cv=kfold, scoring='accuracy', n_jobs=-1)
+    # Extract the best score
+    best_score = max(scores)
+    # Loss must be minimized
+    loss = - best_score
+    # Dictionary with information for evaluation
+    return {'loss': loss, 'params': params, 'status': STATUS_OK}
+
+# Trials to track progress
+bayes_trials = Trials()
+
+# Optimize
+best = fmin(fn=objective, space=space, algo=tpe.suggest, max_evals=6, trials=bayes_trials)
+params = space_eval(space, best)
 
 # Instantiate and test the model
 print()
-model = xgb.XGBClassifier()
-rs_model = RandomizedSearchCV(model, param_distributions=params, n_iter=5, scoring='accuracy', cv=3, verbose=3)
-rs_model.fit(X_train, y_train)
-y_pred = rs_model.predict(X_test)
+model = xgb.XGBClassifier(
+    gamma=params['gamma'], 
+    learning_rate=params['learning_rate'], 
+    max_depth=params['max_depth'], 
+    min_child_weight=params['min_child_weight'], 
+    n_estimators=params['n_estimators'], 
+    subsample=params['subsample'],
+    colsample_bytree=params['colsample_bytree']
+)
+# Fit model
+model.fit(X_train, y_train)
+
+# Predict on unseen data
+y_pred = model.predict(X_test)
 
 # Save model
 with open("ml/model.pkl", "wb") as handle:
-    pickle.dump(rs_model, handle)
+    pickle.dump(model, handle)
 
 # Save encoder
 with open("ml/encoder.pkl", "wb") as handle:
