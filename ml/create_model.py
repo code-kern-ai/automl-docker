@@ -241,7 +241,7 @@ for epoch in range(750):
     loss.backward()
 
     #if epoch % 10 == 0:
-    sys.stdout.write(f'\rLoss of {round(float(loss), 2)} at epoch {epoch} of 500')
+    sys.stdout.write(f'\rLoss of {round(float(loss), 2)} at epoch {epoch} of 750')
     sys.stdout.flush()
 
     optimizer.step()
