@@ -18,7 +18,7 @@ import torch
 import torch.nn as nn
 
 # Sklearn libraries
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import (
     accuracy_score,
@@ -117,6 +117,9 @@ def target_getter(df):
             pass
     return target_input
     
+# Use cuda if available 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 # get datetime dd/mm/YY H:M
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y %H-%M")
@@ -210,8 +213,8 @@ while True:
         pass
 
 # Setting up features and labels
-features =  torch.FloatTensor(embeddings)
-target = torch.LongTensor(target)
+features =  torch.FloatTensor(embeddings).to(device)
+target = torch.LongTensor(target).to(device)
 
 # Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
@@ -224,7 +227,7 @@ model = nn.Sequential(
     nn.ReLU(),
     nn.Dropout(p=0.2),
     nn.Linear(24, 3)
-)
+).to(device)
 
 loss_function = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters())
@@ -246,13 +249,21 @@ for epoch in range(750):
 
     optimizer.step()
 
-# Save model
-with open("ml/model.pkl", "wb") as handle:
-    pickle.dump(model, handle)
+try:
+    # Save model
+    torch.save(model.state_dict(), "ml/model.pt")
 
-# Save encoder
-with open("ml/encoder.pkl", "wb") as handle:
-    pickle.dump(encoder, handle)
+    # Save encoder
+    with open("ml/encoder.pkl", "wb") as handle:
+        pickle.dump(encoder, handle)
+
+except:
+        # Save model
+    torch.save(model.state_dict(), "model.pt")
+
+    # Save encoder
+    with open("encoder.pkl", "wb") as handle:
+        pickle.dump(encoder, handle)
 
 y_pred = []
 for i in X_test:
@@ -260,8 +271,11 @@ for i in X_test:
     pred_numpy = pred.cpu().detach().numpy().astype(int)
     y_pred.append(np.argmax(pred_numpy))
 
+# COnvert y_test to a numpy array
+y_test = y_test.cpu().numpy()
+
 # Generate evaluation metrics
-print("")
+print(" ")
 print("Generating evaluation metrics on unseen testing data...")
 print("- - - - - - - - - - - - - - - -")
 print(f"Model accuracy is: {round(accuracy_score(y_test, y_pred), 2) * 100} %")
@@ -291,7 +305,11 @@ config["Transformer_Model"] = {"model_used": model_name}
 config["ML_Model"] = {"type_ml_model": type(model)}
 config["Encoder"] = {"usage": encoder_usage}
 
-with open("ml/config.ini", "w") as f:
-    config.write(f)
+try:
+    with open("ml/config.ini", "w") as f:
+        config.write(f)
+except:
+    with open("config.ini", "w") as f:
+        config.write(f)
 
 print(f"{bcolors.BOLD}That's it!{bcolors.ENDC} You have built your model, and can now run it with docker 🐳")
