@@ -219,6 +219,7 @@ target = torch.LongTensor(target).to(device)
 # Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
+# Setting up a dense neural network with pytorch
 model = nn.Sequential(
     nn.Linear(X_train.shape[1], 128),
     nn.ReLU(),
@@ -235,16 +236,23 @@ optimizer = torch.optim.Adam(model.parameters())
 losses = []
 print(" ")
 print("Training model...")
-for epoch in range(750):
+
+# Training loop of the model
+num_epochs = 750 
+for epoch in range(num_epochs):
+    # Create prediction of the model
     y_hat = model(X_train)
+
+    # Calculate loss
     loss = loss_function(y_hat, y_train)
     losses.append(loss.item())
 
+    # Backpropagate to update weights
     model.zero_grad()
     loss.backward()
 
     #if epoch % 10 == 0:
-    sys.stdout.write(f'\rLoss of {round(float(loss), 2)} at epoch {epoch} of 750')
+    sys.stdout.write(f'\rLoss of {round(float(loss), 2)} at epoch {epoch+1} of 750')
     sys.stdout.flush()
 
     optimizer.step()

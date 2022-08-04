@@ -1,6 +1,6 @@
 embedders==0.0.11
 fastapi==0.78.0
-numpy==1.22.3
+numpy==1.23.1
 pandas==1.4.2
 pydantic==1.8.2
 scikit-learn==1.0.2
