@@ -219,6 +219,11 @@ target = torch.LongTensor(target).to(device)
 # Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
+try:
+    num_classes = len(enoder.classes_)
+except:
+    num_classes = len(df[target_column].value_counts())
+
 # Setting up a dense neural network with pytorch
 model = nn.Sequential(
     nn.Linear(X_train.shape[1], 128),
@@ -227,7 +232,7 @@ model = nn.Sequential(
     nn.Linear(128, 24),
     nn.ReLU(),
     nn.Dropout(p=0.2),
-    nn.Linear(24, 3)
+    nn.Linear(24, num_classes)
 ).to(device)
 
 loss_function = nn.CrossEntropyLoss()
@@ -238,7 +243,7 @@ print(" ")
 print("Training model...")
 
 # Training loop of the model
-num_epochs = 750 
+num_epochs = 450 
 for epoch in range(num_epochs):
     # Create prediction of the model
     y_hat = model(X_train)
