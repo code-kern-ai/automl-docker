@@ -4,7 +4,7 @@ numpy==1.23.1
 pandas==1.4.2
 pydantic==1.8.2
 scikit-learn==1.0.2
-streamlit==1.9.2
+streamlit==1.11.1
 uvicorn==0.17.6
 torch==1.11.0
 
