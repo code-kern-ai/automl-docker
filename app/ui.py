@@ -9,6 +9,7 @@ input_ = st.text_input(
 
 if st.button("Predict!"):
     if input_ is not None:
+    
         # Get request output from the fastapi
         response = requests.post(
             "http://localhost:7531/predict", json={"text": [input_]}

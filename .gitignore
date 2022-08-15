@@ -134,3 +134,4 @@ dmypy.json
 # Model and encoders
 *.pkl
 *.ini
+*.pt

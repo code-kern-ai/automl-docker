@@ -80,10 +80,9 @@ Now, all the components are ready and it's time to bring them all together. Buil
 $ bash start_container
 ```
 
-Or, if you dont have bash in your CLI:
+Or on winodws, you can run the following file:
 ```
-$ docker build -t automl-container-backend .
-$ docker run -d -p 7531:7531 automl-container-backend
+$ start_container_windows.bat
 
 ```
 

@@ -1,28 +1,30 @@
 # Logistic Regression spits out warnings on large datasets. For now, there warning will be surpressed.
 # This warning will get taken care of in a later version
 import warnings
-
 warnings.filterwarnings("ignore")
 
 # Basis libraries
 import numpy as np
 import pandas as pd
 import pickle
+import sys
+import time
+from tqdm import tqdm
 from datetime import datetime
 from configparser import ConfigParser
 from pathlib import Path
 
+import torch 
+import torch.nn as nn
+
 # Sklearn libraries
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
     mean_squared_error,
 )
-
-# Import torch libraries
-import xgboost as xgb
 
 # Embedders and Transformers
 from embedders.classification.contextual import TransformerSentenceEmbedder
@@ -115,6 +117,9 @@ def target_getter(df):
             pass
     return target_input
     
+# Use cuda if available 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 # get datetime dd/mm/YY H:M
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y %H-%M")
@@ -208,39 +213,82 @@ while True:
         pass
 
 # Setting up features and labels
-features = embeddings
+features =  torch.FloatTensor(embeddings).to(device)
+target = torch.LongTensor(target).to(device)
 
 # Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
-# Param grid for random search
-params = {
-        'n_estimators' : [250, 300, 350, 400, 450, 500],
-        'min_child_weight': [1, 5, 10],
-        'gamma': [0.01, 0.1, 0.5, 1, 1.5],
-        'subsample': [0.6, 0.8, 1.0],
-        'learning_rate': [0.01, 0.1],
-        'max_depth': [2, 3, 4, 5, 6],
-        'random_state': [42]
-        }
+try:
+    num_classes = len(encoder.classes_)
+except:
+    num_classes = len(df[target_column].value_counts())
 
-# Instantiate and test the model
-print()
-model = xgb.XGBClassifier()
-rs_model = RandomizedSearchCV(model, param_distributions=params, n_iter=5, scoring='accuracy', cv=3, verbose=3)
-rs_model.fit(X_train, y_train)
-y_pred = rs_model.predict(X_test)
+# Setting up a dense neural network with pytorch
+model = nn.Sequential(
+    nn.Linear(X_train.shape[1], 128),
+    nn.ReLU(),
+    nn.Dropout(p=0.2),
+    nn.Linear(128, 24),
+    nn.ReLU(),
+    nn.Dropout(p=0.2),
+    nn.Linear(24, num_classes)
+).to(device)
 
-# Save model
-with open("ml/model.pkl", "wb") as handle:
-    pickle.dump(rs_model, handle)
+loss_function = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters())
 
-# Save encoder
-with open("ml/encoder.pkl", "wb") as handle:
-    pickle.dump(encoder, handle)
+losses = []
+print(" ")
+print("Training model...")
+
+# Training loop of the model
+num_epochs = 450 
+for epoch in range(num_epochs):
+    # Create prediction of the model
+    y_hat = model(X_train)
+
+    # Calculate loss
+    loss = loss_function(y_hat, y_train)
+    losses.append(loss.item())
+
+    # Backpropagate to update weights
+    model.zero_grad()
+    loss.backward()
+
+    #if epoch % 10 == 0:
+    sys.stdout.write(f'\rLoss of {round(float(loss), 2)} at epoch {epoch+1} of {num_epochs}')
+    sys.stdout.flush()
+
+    optimizer.step()
+
+try:
+    # Save model
+    torch.save(model, "ml/model.pt")
+
+    # Save encoder
+    with open("ml/encoder.pkl", "wb") as handle:
+        pickle.dump(encoder, handle)
+
+except:
+        # Save model
+    torch.save(model.state_dict(), "model.pt")
+
+    # Save encoder
+    with open("encoder.pkl", "wb") as handle:
+        pickle.dump(encoder, handle)
+
+y_pred = []
+for i in X_test:
+    pred = model(i)
+    pred_numpy = pred.cpu().detach().numpy().astype(int)
+    y_pred.append(np.argmax(pred_numpy))
+
+# COnvert y_test to a numpy array
+y_test = y_test.cpu().numpy()
 
 # Generate evaluation metrics
-print()
+print(" ")
 print("Generating evaluation metrics on unseen testing data...")
 print("- - - - - - - - - - - - - - - -")
 print(f"Model accuracy is: {round(accuracy_score(y_test, y_pred), 2) * 100} %")
@@ -270,7 +318,11 @@ config["Transformer_Model"] = {"model_used": model_name}
 config["ML_Model"] = {"type_ml_model": type(model)}
 config["Encoder"] = {"usage": encoder_usage}
 
-with open("ml/config.ini", "w") as f:
-    config.write(f)
+try:
+    with open("ml/config.ini", "w") as f:
+        config.write(f)
+except:
+    with open("config.ini", "w") as f:
+        config.write(f)
 
 print(f"{bcolors.BOLD}That's it!{bcolors.ENDC} You have built your model, and can now run it with docker 🐳")

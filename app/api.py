@@ -3,6 +3,8 @@ from fastapi import FastAPI, responses
 from pydantic import BaseModel
 from configparser import ConfigParser
 from util import get_model,get_encoder
+import torch 
+import torch.nn.functional as F
 
 from embedders.classification.contextual import TransformerSentenceEmbedder
 
@@ -39,22 +41,26 @@ def predict(data: Text):
 
     # Create embeddings to make text usable by ml model
     embeddings = transformer.transform(corpus)
+    embeddings = torch.FloatTensor(embeddings)
 
-    predictions = model.predict(embeddings).tolist()
+    logits = model(embeddings)
+    probs = F.softmax(logits, dim=1).tolist()
+    preds = torch.argmax(logits, dim=1).tolist()
 
-    probabilities = model.predict_proba(embeddings).tolist()
-    probabilities_max = [round(max(i), 4) for i in probabilities]
+    predictions = model(embeddings).tolist()
+
+    probs_max = [round(max(i), 4) for i in probs]
 
     results = []
     if use_encoder == "True":
         encode = get_encoder()
-        predictions_labels = encode.inverse_transform(predictions).tolist()
+        predictions_labels = encode.inverse_transform(preds).tolist()
 
-        for i, j in zip(predictions_labels, probabilities_max):
+        for i, j in zip(predictions_labels, probs_max):
             results.append({"label": i, "confidence": j})
 
     else:
-        for i, j in zip(predictions, probabilities_max):
+        for i, j in zip(predictions, probs_max):
             results.append({"label": i, "confidence": j})
 
     return results
