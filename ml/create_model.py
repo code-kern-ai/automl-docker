@@ -220,7 +220,7 @@ target = torch.LongTensor(target).to(device)
 X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
 
 try:
-    num_classes = len(enoder.classes_)
+    num_classes = len(encoder.classes_)
 except:
     num_classes = len(df[target_column].value_counts())
 
@@ -264,7 +264,7 @@ for epoch in range(num_epochs):
 
 try:
     # Save model
-    torch.save(model.state_dict(), "ml/model.pt")
+    torch.save(model, "ml/model.pt")
 
     # Save encoder
     with open("ml/encoder.pkl", "wb") as handle:

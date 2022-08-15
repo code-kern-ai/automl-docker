@@ -1,4 +1,5 @@
 import pickle
+import torch 
 
 __loaded_model = None
 __loaded_encoder = None
@@ -6,7 +7,7 @@ __loaded_encoder = None
 def get_model():
     global __loaded_model
     if not __loaded_model:
-        __loaded_model = pickle.load(open("/automl/ml/model.pt", "rb"))
+        __loaded_model = torch.load("/automl/ml/model.pt")
     return __loaded_model
 
 def get_encoder():
